@@ -4,8 +4,6 @@ import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import Avatar from '@material-ui/core/Avatar';
 import Spinner from '../components/Spinner';
 import PaginateComponent from '../components/Paginate';
 import Button from '@material-ui/core/Button';
@@ -18,23 +16,13 @@ const styles = theme => ({
     height: window.innerHeight - 64,
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
     alignItems: 'center',
     overflow: 'hidden'
   },
 
-  usersList: {
+  list: {
     width: '100%',
     overflow: 'auto',
-  },
-  round_status: {
-    width: 16,
-    height: 16,
-    borderRadius: '50%',
-    backgroundColor: 'gray',
-    display: 'inline-block',
-    paddingRight: 10,
-    marginRight: 20,
   },
   buttonBlock: {
     display: 'flex',
@@ -46,63 +34,61 @@ const styles = theme => ({
 
 @AppWrapper
 @withStyles(styles)
-@inject('usersStore')
+@inject('contentTypesStore', 'appStore')
 @observer
-class Users extends Component {
+class ContentTypes extends Component {
+
+  contentTypeID = 0
 
   componentDidMount() {
-    this.props.usersStore.getUsers()
+    this.contentTypeID = this.props.appStore.avilableViews.get(this.props.match.path).content_type_id
+    this.props.contentTypesStore.getAll({content_type_id: this.contentTypeID})
   }
   
   render() {
     const {
       classes,
       history,
-      usersStore: {
-        users,
+      contentTypesStore: {
+        all,
+        name,
         paginate,
-      }
+      },
+      match: { path },
     } = this.props
 
     return (
       <div className={classes.wrapper}>
-        <Spinner listenLoad={['allUsers',]} />
+        <Spinner listenLoad={['allContentTypes',]} />
         <div className={classes.buttonBlock}>
           <Button 
-            onClick={() => history.push("/users/new")}
+            onClick={() => history.push(`${path}/new`)}
             variant="contained" 
             color="secondary"
             className={classes.button}
           >
-            Добавить пользователя
+            { `Добавить ${name}` }
           </Button>
         </div>
         <PaginateComponent 
           paginate={paginate}
           maxPages={9}
-          getContent={page => this.props.usersStore.getUsers(page)}
+          getContent={page => this.props.contentTypesStore.getAll({page, content_type_id: this.contentTypeID,})}
         />
-        <List className={classes.usersList}>
+        <List className={classes.list}>
           {
-            users.map((user, index) => (
-              <ListItem key={index} button onClick={() => history.push("/users/" + user.id)}>
-                <span className={classes.round_status} style={{backgroundColor: user.online? 'green': 'red'}}/>
-                <ListItemAvatar>
-                  <Avatar
-                    alt={`Avatar n°${user.id}`}
-                    src={user.photo}
-                  />
-                </ListItemAvatar>
-                <ListItemText primary={user.fullName} />
-                <ListItemText primary={user.phone} />
+            all.map((item, index) => (
+              <ListItem key={index} button onClick={() => history.push(`${path}/${item.id}`)}>
+                <ListItemText primary={item.title} />
               </ListItem>
             ))
           }
-        </List> 
+        </List>
+        
       </div>
     );
   }
 }
 
 
-export default Users; 
+export default ContentTypes; 

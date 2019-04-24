@@ -5,14 +5,12 @@ import { PublicRoute } from 'react-router-with-props';
 import Login from './screen/Login';
 import Index from './screen/Index';
 import Route404 from './screen/Route404';
-import EditUser from './screen/EditUser';
+import EditContentType from './screen/EditContentType';
 import Users from './screen/Users';
-import Views from './screen/Views';
-import EditView from './screen/EditView';
 import { observer, inject } from 'mobx-react';
 import { observe } from 'mobx';
 
-export const RegisterRouters = [
+export const RegisterRoutes = [
   {
     path: "/",
     component: Index,
@@ -23,34 +21,23 @@ export const RegisterRouters = [
   {
     path: "/users",
     component: Users,
-    title: "Пользователи",
     icon: "people",
     menu: true,
+    children: [
+      {
+        path: "/:id",
+        component: EditContentType,
+      },
+    ]
   },
-  {
-    path: "/user/:id",
-    component: EditUser,
-    menu: false,
-  },
-  {
-    path: "/view/:id",
-    component: EditView,
-    menu: false,
-  }, 
-  {
-    path: "/views",
-    component: Views,
-    title: "Представления",
-    menu: true,
-    icon: "view_carousel"
-  }
 ]
 
 @inject('appStore')
 @observer
 class AppRouters extends Component {
 
-  componentWillMount() {
+  constructor(props) {
+    super(props);
     const { routes, isAuth } = this.props.appStore
     this.state = {
       routes,

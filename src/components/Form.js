@@ -1,10 +1,14 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Checkbox from '@material-ui/core/Checkbox';
+import Switch from '@material-ui/core/Switch';
 import Button from '@material-ui/core/Button';
+
+import text from '../constants/text';
+import { Typography } from '@material-ui/core';
 
 
 const styles =  theme => ({
@@ -15,6 +19,10 @@ const styles =  theme => ({
   menu: {
     width: 200,
   },
+  button: {
+    width: 300,
+    display: 'block'
+  }
 });
 
 @withStyles(styles)
@@ -38,25 +46,23 @@ export default class Forms extends Component {
     buttonStyle: PropTypes.object,
   }
 
-  dateFields = [];
+  dateFields = []
 
   constructor(props) {
     super(props);
     this.state = {
       initFields: _.cloneDeep(props.fields),
-    };
+    }
   }
 
   _isChanged() {
-    for (let { changed } of Object.values(this.props.fields)) {
-      if (changed) return true;
+    for (let [name, { value, required }] of Object.entries(this.props.fields)) {
+      const changed = value != this.state.initFields[name].value
+      if ((required && !!value && changed) || (!required && changed)) {
+        return true
+      }
     }
     return false;
-  }
-
-  _isChangedAll() {
-    let fields = Object.values(this.props.fields).filter(({required, hidden}) => required && !hidden)
-    return fields.filter(({ changed }) => changed).length === fields.length;
   }
 
   _isError() {
@@ -66,7 +72,7 @@ export default class Forms extends Component {
     return false;
   }
 
-  _changeDropDown = name => value => {
+  _changeDropDown = name => ({target: {value}}) => {
     let fields = Object.assign({}, this.props.fields)
     fields[name].value = value
     fields[name].onChange && fields[name].onChange(value)
@@ -78,21 +84,43 @@ export default class Forms extends Component {
     fields[name].value = !fields[name].value
     fields[name].changed = fields[name].value
     fields[name].onChange && fields[name].onChange(value)
-    console.log(name, fields[name].value)
     this.props.onChangeFields(fields)
   }
 
-  _checkFields = name => value => {
-    console.log(name, value)
-    let fields = Object.assign({}, this.props.fields)
-    fields[name].value = value
+  _checkFields = name => ({target: {value}}) => {
+    let fields = Object.assign({}, this.props.fields);
+    const oldValue = fields[name].value;
+    fields[name].error = null;
+    fields[name].value = value;
+    fields[name].changed = true;
+    if (
+      value && fields[name].transform
+      && ((oldValue && oldValue.toString().substr(0, oldValue.length - 1) !== value)
+      || !oldValue)
+    ) {
+      value = fields[name].transform(value)
+    }
+
+    if(['input', 'textarea', 'password'].indexOf(fields[name].type) > -1) {
+      fields[name].value = value.toString().trim();
+      if (fields[name].required && fields[name].value.length < (fields[name].minLength || 1)) {
+        fields[name].error = text.ERROR_EMPTY_FIELD;
+      }
+      fields[name].changed = fields[name].value && this.state.initFields[name].value !== fields[name].value;
+    }
+
+    if (!fields[name].error && fields[name].check) {
+      const args = fields.type === 'password' 
+      ? [fields[name].value, fields.password.value]
+      : fields[name].value;
+      fields[name].error = fields[name].check(args)
+    }
+    
     this.props.onChangeFields(fields)
-    return Boolean(fields[name].error)
   }
 
   onPressButton() {
-    let data = {};
-    Keyboard.dismiss();
+    let data = {}
     Object.entries(this.props.fields).forEach(([name, {value, type}]) => {
       let _value;
       if (this.props.fields[name].сonvert instanceof Function) {
@@ -107,28 +135,40 @@ export default class Forms extends Component {
   }
 
   _renderFields() {
-    const { classes } = this.props;
-    return Object.entries(this.props.fields).map(
-      ([name, { value, type, label, error, required, multiple, maxLength, placeHolder, width, options, hidden, disabled }], index) => {
-        if (hidden) return null;
+    const { classes, fields } = this.props;
+    return Object.entries(fields).map(
+      ([name, { value, type, label, error, required, multiple, maxLength, placeHolder, width, options, disabled }], index) => {
         if (type == "checkbox") {
           return (
-            <Checkbox
-              checked={value}
-              onChange={this._changeCheckBox(name)}
-              value="checkedA"
-            />
+            <div key={name}>
+              <Checkbox
+                id={name}
+                checked={value}
+                disabled={disabled}
+                onChange={this._changeCheckBox(name)}
+              />
+              <label htmlFor={name}><Typography inline>{label}</Typography></label>
+            </div>
           )
         } else if (type === 'switch') {
-          <Switch
-            checked={value}
-            onChange={this._changeCheckBox(name)}
-            value={value}
-          />
+           return (
+             <div key={name}>
+              <Switch
+                id={name}
+                checked={value}
+                disabled={disabled}
+                onChange={this._changeCheckBox(name)}
+                value={value}
+              />
+              <label htmlFor={name}><Typography inline>{label}</Typography></label>
+            </div>
+           )
         } else if (type === 'select') {
           return (
             <TextField
               id={name}
+              key={name}
+              style={{width: width || 'auto'}}
               select
               displayEmpty
               required={required}
@@ -152,16 +192,21 @@ export default class Forms extends Component {
                 </MenuItem>
               ))}
             </TextField>
-          )
+          ) 
+        } if (type === "hidden") {
+          return <input key={name} value={value} id={name} name={name} type={type} />
         } else {
           return (
             <TextField
+              key={name}
               id={name}
-              error={error}
+              error={!!error}
+              style={{width: width || 'auto'}}
+              helperText={error}
               disabled={disabled}
-              hidden={hidden}
               label={label}
-              maxLength={maxLength}
+              required={required}
+              inputProps={{maxLength: maxLength}}
               multiline={type === 'textarea'}
               className={classes.textField}
               value={value}
@@ -177,21 +222,23 @@ export default class Forms extends Component {
 
   render() {
     const isError = this._isError();
-    const isChangedAll = this._isChangedAll();
+    const isChanged = this._isChanged();
+    const { classes, style, buttonStyle, buttonDisabled, textButton } = this.props;
     return (
       <form style={[
           {paddingHorizontal: 15, paddingBottom: 20, width: '100%', alignItems: 'center',},
-          this.props.style
+          style
       ]}>
         {this._renderFields()}
         <Button 
           variant="contained" 
           color="secondary"
+          className={classes.button}
           onClick={() => this.onPressButton()}
-          style={[{marginTop: 30}, this.props.buttonStyle]}
-          disabled={this.props.buttonDisabled || !isChangedAll || isError} 
+          style={[{marginTop: 30}, buttonStyle]}
+          disabled={buttonDisabled || !isChanged || isError}
         >
-          {this.props.textButton}
+          {textButton}
         </Button>
       </form>
     );

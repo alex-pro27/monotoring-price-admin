@@ -1,39 +1,55 @@
-import { observable, action } from 'mobx';
 import Permission from './Permission';
 
 class View {
   
-  id
-  @observable name
-  @observable parent_id
-  @observable children = []
-  @observable permissions = []
-  @observable route_path
-  @observable content_type
+  content_type_id
+  view_id
+  name
+  plural
+  parent_id
+  children = []
+  permission = []
+  path
+  content_type
 
-  static create({id, name, parent_id, children, route_path}) {
+  static create({content_type_id, view_id, name, content_type, plural, parent_id, path, children, permission}) {
     let view = new View();
     [
-      view.id,
+      view.content_type_id,
+      view.view_id,
       view.name,
       view.parent_id,
-      view.children,
-      view.route_path,
-      view.permission,
+      view.path,
       view.content_type,
+      view.plural
     ] = [
-      id,
+      content_type_id,
+      view_id,
       name,
       parent_id,
-      route_path,
-      children,
-      view.content_type,
+      path,
+      content_type,
+      plural
     ]
+    view.addPermission(permission || [])
+    view.children = view.addChildren(children || [])
     return view
   }
 
-  @action addPermissions(permissions) {
-    this.permissions = permissions.map(p => Permission.create(p))
+  addChildren(children=[]) {
+    let views = []
+    for (let _child of children) {
+      let child = View.create(_child)
+      if (child.children.length) {
+        child.children = this.addChildren(child.children)
+      }
+      views.push(child)
+    }
+    return views
+  }
+
+  addPermission(permission) {
+    this.permission = Permission.create(permission)
   }
 }
 

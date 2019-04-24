@@ -5,9 +5,10 @@ import Api from '../api/api';
 import Admin  from './models/Admin';
 import Permission  from './models/Permission';
 import userStore from './users-store';
-import text from '../constants/text';
 import View from './models/View';
-import { RegisterRouters } from '../Router'
+import { RegisterRoutes } from '../Router'
+import ContentTypes from '../screen/ContentTypes';
+import EditContentType from '../screen/EditContentType';
 
 class AppStore {
 
@@ -31,22 +32,69 @@ class AppStore {
   @computed get routes() {
     if (this.isAuth) {
       let routes = []
-      RegisterRouters.forEach(route => {
-        const view = this.avilableViews.get(route.path);
-        if (view || this.isSuperUser) {
-            routes.push({
-            title: view && view.name || route.title,
-            component: route.component,
-            permission: this.isSuperUser ? Permission.create({access: 7}) : view && view.permission,
-            icon: route.icon,
-            menu: route.menu,
-            path: route.path,
+      const addRoute = (route, extra={}) => {
+        const exchidren = [].concat(extra.children || [])
+        routes.push({
+          path: route.path,
+          component: route.component,
+          icon: extra.icon || route.icon,
+          menu: route.menu,
+          title: extra.name || extra.plural || route.title,
+          permission: extra.permission,
+        })
+        if (Array.isArray(route.children)) {
+          route.children.forEach(child => {
+            const exchild = exchidren.find((x) => x.path === child.path) || {}
+            addRoute(
+              {
+                 ...child, 
+                 path: route.path + child.path, 
+                 title: exchild.name || exchild.plural || route.title,
+              },
+              exchild,
+            )
           })
         }
-      })
+      }
+      const accessPerm = Permission.create({access: 7})
+      if (this.isSuperUser) {
+        const paths = [...this.avilableViews.keys()]
+        for (let route of RegisterRoutes) {
+          if (paths.indexOf(route.path) === -1) {
+            route = {permission: accessPerm, ...route}
+            routes.push(route)
+          }
+        }
+        for (let [path, view] of this.avilableViews) {
+          let route = RegisterRoutes.find(r => (r.path === path))
+          if (route) {
+            addRoute(route, view)
+          } else {
+            routes.push({
+              title: view.name,
+              path: path,
+              permission: view.permission,
+              menu: true,
+              icon: 'view_carousel',
+              component: ContentTypes
+            })
+            routes.push({
+              title: `Добавить ${view.name}`,
+              path: path + '/:id',
+              permission: view.permission,
+              component: EditContentType
+            })
+          }
+        }
+      } else {
+        RegisterRoutes.forEach(route => {
+          const view = this.avilableViews.get(route.path)
+          view && addRoute(route, view)
+        })
+      }
       return routes
     } else {
-      return RegisterRouters
+      return RegisterRoutes
     }
   }
 
@@ -69,8 +117,8 @@ class AppStore {
       this.api.getAvailableViews()
       .then(views => {
         let availableViews = new Map()
-        Object.entries(views).forEach(([k, v]) => {
-          availableViews.set(k, View.create({...v, route_path: k}))
+        views.forEach((view) => {
+          availableViews.set(view.path, View.create(view))
         })
         if (this.admin.is_super_user || availableViews.size > 0) {
           runInAction(() => this.avilableViews = availableViews)

@@ -1,17 +1,16 @@
 
 export function TextField({
-  label, 
+  label,
   value = '', 
-  required = true, 
-  width = "100%",
+  required = false, 
+  width = "80%",
   disabled = false, 
   error = '', 
   changed = false,
   maxLength = 50,
   placeHolder = '',
   type = "input",
-  onChange,
-  getError = value => changed && required ? !!value && 'Заполните это поле' : '',
+  check = () => "",
   transform = value => value.toString().trim()
 }) {
   return Object.defineProperties({
@@ -22,7 +21,9 @@ export function TextField({
     changed,
     maxLength,
     type,
-    getError,
+    check,
+    value,
+    transform
   }, {
     placeHolder: {
       get: () => placeHolder
@@ -30,20 +31,34 @@ export function TextField({
     label: {
       get: () => label 
     },
-    value: {
-      get: () => value,
-      set: newValue => {
-        changed = true
-        if (
-          newValue && typeof transform === 'function'
-          && ((oldValue && oldValue.toString().substr(0, value.length - 1) !== newValue)
-          || !value)
-        ) {
-          value = typeof transform === 'function' ? transform(newValue) : value
-        }
-        typeof onChange === 'function' && onChange(value)
-        typeof getError === 'function' && (error = getError(value))
+  })
+}
+
+export function EmailField({
+  label, 
+  value = '', 
+  required = false, 
+  width = "80%",
+  disabled = false, 
+  error = '', 
+  changed = false,
+  onChange,
+}){
+  return TextField({
+    label,
+    value, 
+    required, 
+    width,
+    disabled, 
+    error, 
+    changed,
+    onChange,
+    transform: value => (value || "").toLowerCase(),
+    check: value => {
+      if (!value.match(/^[\w\d][\w\d-._]{0,100}@[\w\d-_]{1,100}\.[\w\d-_]{1,100}/i)) {
+        return "Неверно заполнено поле"
       }
+      return ''
     }
   })
 }
@@ -52,11 +67,12 @@ export function PhoneField({
   label, 
   value = '', 
   required = false, 
-  width = "100%",
+  width = "80%",
   disabled = false, 
   error = '', 
   changed = false,
   onChange,
+  maxLength=17
 }) {
   return TextField({
     label,
@@ -66,8 +82,8 @@ export function PhoneField({
     disabled, 
     error, 
     changed,
-    type: "phone",
     onChange,
+    maxLength,
     transform: value => {
       if (value.match(/\+7\(\d{3}$/)) return value;
       return (
@@ -84,18 +100,37 @@ export function PhoneField({
           })
       )
     },
-    getError: value => {
-      if (required) {
-        if (!!value) {
-          return 'Заполните это поле'
-        }
-      }
-      if (!!value) {
-        if (!value.match(/\+7-\d{3}-\d{3}-\d{2}-\d{2}/)) {
-          return "Неверно заполнено поле"
-        }
+    check: value => {
+      if (!!value && !value.match(/^\+7\(\d{3}\)-\d{3}-\d{2}-\d{2}$/)) {
+        return "Неверно заполнено поле"
       }
       return ''
     },
+  })
+}
+
+export function SelectField({
+  label,
+  value = '', 
+  required = false, 
+  width = "80%",
+  disabled = false, 
+  error = '', 
+  changed = false,
+  placeHolder = '',
+  type = "select",
+  options = [],
+}) {
+  return Object.defineProperties({
+    label,
+    value, 
+    required, 
+    width,
+    disabled, 
+    error, 
+    changed,
+    placeHolder,
+    type,
+    options
   })
 }

@@ -3,11 +3,9 @@ import {
   LOGOUT, 
   CHECK_AUTH,
   ALL_USERS,
-  USER_INFO,
-  ALL_VIEWS,
-  GET_VIEW,
   GET_AVAILABLE_VIEWS,
-  CREATE_VIEW,
+  ALL_CONTENT_TYPES,
+  ACTION_FIELDS_CONTENT_TYPE,
 } from '../constants/urls';
 import RestService from './rest';
 
@@ -77,20 +75,6 @@ export default class Api {
   }
 
   /**
-   * Получить пользователя
-   * @param {*} id ID Пользователя
-   */
-  async getUserInfo(id) {
-    return this.request(
-      () => this._rest.get(
-        USER_INFO.replace(':id', id),
-        {}, {},
-        {loadName: 'getUserInfo', cacheTimelife: 0}
-      )
-    )
-  }
-
-  /**
    * Получить все доступные для пользователя вьюхи 
    */
   async getAvailableViews() {
@@ -104,41 +88,48 @@ export default class Api {
   }
 
   /**
-   * Все вьюхи
+   * Получить список из табилцы по ID content_type
+   * @param {*} id - content-type
+   * @param {*} page - номер страницы
    */
-  async allViews() {
+  async allContentTypes({page, content_type_id, content_type_name}) {
     return this.request(
       () => this._rest.get(
-        ALL_VIEWS,
-        {}, {},
-        {loadName: 'allViews', cacheTimelife: 0}
+        ALL_CONTENT_TYPES,
+        {page, content_type_id, content_type_name}, {},
+        {loadName: 'allContentTypes', cacheTimelife: 0}
       )
     )
   }
 
   /**
-   * Получить представление по ID
+   * Получить поля для редактирования
+   * @param {*} id
+   * @param {*} content_type_id 
    */
-  async getView(id) {
+  async getFieldsContentType({id, content_type_id}) {
     return this.request(
       () => this._rest.get(
-        GET_VIEW.replace(':id', id),
-        {}, {},
-        {loadName: 'getView', cacheTimelife: 0}
+        ACTION_FIELDS_CONTENT_TYPE.replace(':action', id),
+        {content_type_id}, {},
+        {loadName: 'getFieldsContentType', cacheTimelife: 0}
       )
     )
   }
 
   /**
-   * Зарегистрировать вьюху
-   * @param {*} param0 
+   * Получить поля для редактирования
+   * @param {*} id
+   * @param {*} content_type_id 
    */
-  async createView({ name, route_path, children_idx, prent_id }) {
+  async sendFieldsContentType(content_type_id, fields, del=false) {
+    const method = del ? 'delete': fields.id === 0 ? 'put' : 'post';
+    let action = method === 'put' ? 'create' : fields.id
     return this.request(
-      () => this._rest.put(
-        CREATE_VIEW,
-        {name, route_path, children_idx, prent_id}, {},
-        {loadName: 'createView', cacheTimelife: 0}
+      () => this._rest[method](
+        ACTION_FIELDS_CONTENT_TYPE.replace(':action', action),
+        {content_type_id, fields: JSON.stringify(fields)}, {},
+        {loadName: 'sendFieldsContentType', cacheTimelife: 0}
       )
     )
   }
@@ -179,7 +170,7 @@ export default class Api {
       }
     }
     window.openMessage(message, "error");
-    throw e;
+    // throw e;
   }
 
 }

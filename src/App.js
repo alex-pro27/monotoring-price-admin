@@ -45,7 +45,7 @@ class App extends Component {
 
   componentWillMount() {
     loadFromStorage().then(() => {
-      if (store.isAuth) {
+      if (store.appStore.isAuth) {
         store.appStore.checkAuth()
         .then(() => store.appStore.getAvailableViews())
         .then(() => store.appStore.setToken(store.appStore.admin.token))

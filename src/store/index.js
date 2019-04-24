@@ -1,7 +1,7 @@
 import { create } from 'mobx-persist';
 import appStore from './app-store';
 import usersStore from './users-store';
-import viewsStore from './views-store';
+import contentTypesStore from './content-types-store'
 
 export const hydrate = create({
   storage: localStorage,
@@ -14,7 +14,7 @@ const hydratedStore = {
 
 const store = {
   usersStore,
-  viewsStore,
+  contentTypesStore,
   ...hydratedStore
 }
 

@@ -96,6 +96,7 @@ const styles = theme => ({
   }
 });
 
+var drawerState = false
 
 @withStyles(styles, { withTheme: true })
 @inject('appStore')
@@ -108,22 +109,30 @@ class AppWrapperComponent extends React.Component {
   };
 
   state = {
-    open: false,
-  };
+    open: drawerState,
+    title: '',
+  }
+
+  setTitle = (title) => this.setState({ title }) 
 
   handleDrawerOpen = () => {
-    this.setState({ open: true });
+    drawerState = true
+    this.setState({ open: drawerState })
   };
 
   handleDrawerClose = () => {
-    this.setState({ open: false });
+    drawerState = false
+    this.setState({ open: drawerState })
   };
 
   showConfirmExit() {
     window.showDialog({
       title: "Подтвердите действие",
       message: "Действительно хотите выйти?",
-      yes: () => this.props.appStore.logout()
+      yes: () => {
+        this.props.history.replace("/login")
+        this.props.appStore.logout()
+      }
     })
   }
 
@@ -150,7 +159,7 @@ class AppWrapperComponent extends React.Component {
               <MenuIcon />
             </IconButton>
             <Typography className={classes.grow} variant="title" color="inherit" noWrap>
-              { title }
+              { this.state.title || title }
             </Typography>
             <div className={classes.rightblock}>
               <Typography style={{color: "white"}} >
@@ -185,27 +194,35 @@ class AppWrapperComponent extends React.Component {
           </div>
           <Divider />
           <List>
-            {routesInMenu.map(({title, path, icon}, i) => (
-              <ListItem 
-                button 
-                disabled={this.props.history.location.pathname === path} 
-                key={i}
-                className={this.props.history.location.pathname === path ? classes.activeButton: null}
-                onClick={() => this.props.history.push(path)}
-              >
-                <ListItemIcon>
-                  <Icon>{icon}</Icon>
-                </ListItemIcon>
-                <ListItemText primary={title} />
-              </ListItem>
-            ))}
+            {routesInMenu.map(({title, path, icon}, i) => {
+              const tmp = this.props.history.location.pathname.match(/(^\/[^\/]+)/g)
+              const rootPath = tmp ? tmp[0] : path
+              return (
+                <ListItem 
+                  button 
+                  disabled={this.props.history.location.pathname === path} 
+                  key={i}
+                  className={rootPath === path ? classes.activeButton: null}
+                  onClick={() => this.props.history.push(path)}
+                >
+                  <ListItemIcon>
+                    <Icon>{icon}</Icon>
+                  </ListItemIcon>
+                  <ListItemText primary={title} />
+                </ListItem>
+              )
+            })}
           </List>
           <Divider />
         </Drawer>
         <main className={classes.content}>
           <div className={classes.toolbar} />
           {
-            this.props.children
+            React.Children.map(this.props.children, child => (
+              React.cloneElement(child, {
+                setTitle: this.setTitle
+              })
+            ))
           }
         </main>
       </div>
