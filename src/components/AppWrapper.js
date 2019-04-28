@@ -196,7 +196,7 @@ class AppWrapperComponent extends React.Component {
           <List>
             {routesInMenu.map(({title, path, icon}, i) => {
               const tmp = this.props.history.location.pathname.match(/(^\/[^\/]+)/g)
-              const rootPath = tmp ? tmp[0] : path
+              const rootPath = tmp ? tmp[0] : this.props.history.location.pathname
               return (
                 <ListItem 
                   button 

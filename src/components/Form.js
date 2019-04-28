@@ -9,12 +9,14 @@ import Button from '@material-ui/core/Button';
 
 import text from '../constants/text';
 import { Typography } from '@material-ui/core';
+import MultySelect from './MultySelect';
 
 
-const styles =  theme => ({
+const styles = theme => ({
   textField: {
     marginLeft: theme.spacing.unit,
     marginRight: theme.spacing.unit,
+    maxWidth: 350
   },
   menu: {
     width: 200,
@@ -33,6 +35,7 @@ export default class Forms extends Component {
     onPressButton: (data) => data,
     buttonDisabled: false,
     buttonStyle: {},
+    style: {},
     textButton: "Сохранить"
   }
 
@@ -57,10 +60,20 @@ export default class Forms extends Component {
 
   _isChanged() {
     for (let [name, { value, required }] of Object.entries(this.props.fields)) {
-      const changed = value != this.state.initFields[name].value
-      if ((required && !!value && changed) || (!required && changed)) {
-        return true
+      if (Array.isArray(value)) {
+        if (
+          value.length !== this.state.initFields[name].value.length
+          || _.differenceBy(value, this.state.initFields[name].value, 'id').length
+          ) {
+          return true
+        }
+      } else {
+        const changed = value != this.state.initFields[name].value
+        if ((required && !!value && changed) || (!required && changed)) {
+          return true
+        }
       }
+      
     }
     return false;
   }
@@ -70,6 +83,13 @@ export default class Forms extends Component {
       if (error && !hidden) return true;
     }
     return false;
+  }
+
+  _changeMultySelect = name => (value) => {
+    let fields = Object.assign({}, this.props.fields)
+    fields[name].value = value
+    fields[name].onChange && fields[name].onChange(value)
+    this.props.onChangeFields(fields)
   }
 
   _changeDropDown = name => ({target: {value}}) => {
@@ -121,23 +141,25 @@ export default class Forms extends Component {
 
   onPressButton() {
     let data = {}
-    Object.entries(this.props.fields).forEach(([name, {value, type}]) => {
+    Object.entries(this.props.fields).forEach(([name, {value, type, сonvert}]) => {
       let _value;
-      if (this.props.fields[name].сonvert instanceof Function) {
-        _value = this.props.fields[name].сonvert(value);
+      if (сonvert instanceof Function) {
+        _value = сonvert(value)
       } else {
         _value = value;
       }
       data[name] = _value;
     })
-    this.props.onPressButton(data);
+    
+    const initFields = _.cloneDeep(this.state.initFields);
     this.setState({initFields: _.cloneDeep(this.props.fields)});
+    this.props.onPressButton(data, () => this.setState({ initFields }));
   }
 
   _renderFields() {
     const { classes, fields } = this.props;
     return Object.entries(fields).map(
-      ([name, { value, type, label, error, required, multiple, maxLength, placeHolder, width, options, disabled }], index) => {
+      ([name, { value, type, label, error, required, multiple, maxLength, placeHolder, width, options, disabled, contentType }], index) => {
         if (type == "checkbox") {
           return (
             <div key={name}>
@@ -195,6 +217,17 @@ export default class Forms extends Component {
           ) 
         } if (type === "hidden") {
           return <input key={name} value={value} id={name} name={name} type={type} />
+        } else if (type === 'multy_select') {
+          return (
+            <MultySelect
+              key={name}
+              name={name}
+              label={label}
+              selected={value}
+              contentType={contentType}
+              onChange={this._changeMultySelect(name)}
+            />
+          )
         } else {
           return (
             <TextField
@@ -214,10 +247,9 @@ export default class Forms extends Component {
               margin="normal"
             />
           )
-          
         }
       }
-    );
+    )
   }
 
   render() {
@@ -225,17 +257,14 @@ export default class Forms extends Component {
     const isChanged = this._isChanged();
     const { classes, style, buttonStyle, buttonDisabled, textButton } = this.props;
     return (
-      <form style={[
-          {paddingHorizontal: 15, paddingBottom: 20, width: '100%', alignItems: 'center',},
-          style
-      ]}>
+      <form style={{paddingHorizontal: 15, paddingBottom: 20, width: '100%', alignItems: 'center', ...style}}>
         {this._renderFields()}
         <Button 
           variant="contained" 
           color="secondary"
           className={classes.button}
           onClick={() => this.onPressButton()}
-          style={[{marginTop: 30}, buttonStyle]}
+          style={{marginTop: 30, ...buttonStyle}}
           disabled={buttonDisabled || !isChanged || isError}
         >
           {textButton}

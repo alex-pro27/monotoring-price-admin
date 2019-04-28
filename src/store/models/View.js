@@ -4,6 +4,7 @@ class View {
   
   content_type_id
   view_id
+  icon
   name
   plural
   parent_id
@@ -12,12 +13,24 @@ class View {
   path
   content_type
 
-  static create({content_type_id, view_id, name, content_type, plural, parent_id, path, children, permission}) {
+  static create({
+    content_type_id, 
+    view_id, 
+    name,
+    icon, 
+    content_type, 
+    plural, 
+    parent_id, 
+    path, 
+    children, 
+    permission
+  }) {
     let view = new View();
     [
       view.content_type_id,
       view.view_id,
       view.name,
+      view.icon,
       view.parent_id,
       view.path,
       view.content_type,
@@ -26,6 +39,7 @@ class View {
       content_type_id,
       view_id,
       name,
+      icon,
       parent_id,
       path,
       content_type,

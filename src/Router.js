@@ -6,6 +6,7 @@ import Login from './screen/Login';
 import Index from './screen/Index';
 import Route404 from './screen/Route404';
 import EditContentType from './screen/EditContentType';
+import ContentTypes from './screen/ContentTypes';
 import Users from './screen/Users';
 import { observer, inject } from 'mobx-react';
 import { observe } from 'mobx';

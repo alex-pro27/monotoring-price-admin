@@ -49,7 +49,7 @@ class AppStore {
               {
                  ...child, 
                  path: route.path + child.path, 
-                 title: exchild.name || exchild.plural || route.title,
+                 title: exchild.name || exchild.plural || child.title,
               },
               exchild,
             )
@@ -71,7 +71,7 @@ class AppStore {
             addRoute(route, view)
           } else {
             routes.push({
-              title: view.name,
+              title: view.plural || view.name ,
               path: path,
               permission: view.permission,
               menu: true,

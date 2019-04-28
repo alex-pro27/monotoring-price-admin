@@ -7,7 +7,7 @@ export function TextField({
   disabled = false, 
   error = '', 
   changed = false,
-  maxLength = 50,
+  maxLength = 250,
   placeHolder = '',
   type = "input",
   check = () => "",

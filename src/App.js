@@ -136,7 +136,6 @@ class App extends Component {
   }
 
   render() {
-    const { admin, avilableViews } = store.appStore
     return (
       <Provider {...store}>
         <MuiThemeProvider>

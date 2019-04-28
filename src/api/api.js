@@ -169,8 +169,12 @@ export default class Api {
           break
       }
     }
-    window.openMessage(message, "error");
-    // throw e;
+    if (!message.match(/^{.*}$/)) {
+      window.openMessage(message, "error")
+    } else {
+      window.openMessage("Ошибка", "error")
+    }
+    throw e;
   }
 
 }

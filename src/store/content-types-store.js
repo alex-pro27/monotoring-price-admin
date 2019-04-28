@@ -18,26 +18,24 @@ class ContentTypesStore {
     this.clear()
     this.page = page
     return new Promise(resolve => {
-      this.api.allContentTypes({page, content_type_name, content_type_id})
-      .then(contentTypes => {
+      this.getList(...arguments).then(contentType => {
         runInAction(() => {
-          this.name = contentTypes.meta.name
-          this.plural = contentTypes.meta.plural
-          contentTypes.paginate && (this.paginate = Paginate.create(contentTypes.paginate))
-          contentTypes.result && (this.all = contentTypes.result.map(v => ContentType.create({...v, ...contentTypes.meta})))
+          this.name = contentType.meta.name
+          this.plural = contentType.meta.plural
+          contentType.paginate && (this.paginate = Paginate.create(contentType.paginate))
+          contentType.result && (this.all = contentType.result.map(v => ContentType.create({...v, ...contentType.meta})))
         })
         resolve()
       })
     })
   }
 
+  getList({page = 1, content_type_name = null, content_type_id = null}) {
+    return this.api.allContentTypes({page, content_type_name, content_type_id})
+  }
+
   sendData(content_type_id, fields) {
-    return new Promise(resolve => {
-      this.api.sendFieldsContentType(content_type_id, fields).then(ans => {
-        console.log('sendFieldsContentType',ans)
-        resolve()
-      })
-    })
+    return this.api.sendFieldsContentType(content_type_id, fields)
   }
 
   select({id, content_type_id}) {
@@ -46,7 +44,7 @@ class ContentTypesStore {
       .then(
         contentType => {
           let fields = {}
-          for (let { disabled, type, value, name, required, label } of contentType.fields) {
+          for (let { disabled, type, value, name, required, label, content_type } of contentType.fields) {
             switch (type) {
               case 'string':
               case 'text':
@@ -78,6 +76,19 @@ class ContentTypesStore {
               case 'hidden':
                 fields[name] = {
                   value, name, type
+                }
+                break;
+              case 'has_many':
+              case 'many_to_many':
+              // case 'belongs_to':
+                fields[name] = {
+                  label,
+                  value: value || [],
+                  name,
+                  changed: false,
+                  contentType: content_type,
+                  type: type === 'belongs_to' ? 'select1' : 'multy_select',
+                  сonvert: items => items.map(({id}) => id),
                 }
                 break;
             }

@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withStyles } from '@material-ui/core/styles';
 import AppWrapper from '../components/AppWrapper';
-
-import 'react-image-lightbox/style.css';
 import Spinner from '../components/Spinner';
 import Form from '../components/Form';
 
@@ -29,6 +27,7 @@ class EditContentType extends Component {
   }
 
   componentDidMount() {
+    console.log("EditContentType props",this.props)
     const id = parseInt(this.props.match.params.id) || 0
     const path = this.props.match.path.replace('/:id', '')
     const contentTypeID = this.props.appStore.avilableViews.get(path).content_type_id
@@ -41,20 +40,33 @@ class EditContentType extends Component {
     )
   }
 
-  sendData = (fields) => {
-    console.log('sendData',fields)
-    this.props.contentTypesStore.sendData(this.state.contentTypeID, fields)
+  sendData = (fields, rollback) => {
+    console.log("sendData", fields)
+    this.props.contentTypesStore
+    .sendData(this.state.contentTypeID, fields)
+    .then(() => window.openMessage("Успешно!", "success"))
+    .catch(err => {
+      rollback()
+      try {
+        let message = JSON.parse(err.message)
+        let fields = Object.assign({}, this.state.fields)
+        Object.entries(message).forEach(([k, v]) => {
+          fields[k] && (fields[k].error = v)
+        })
+        this.setState({fields})
+      } catch {}
+    })
   }
 
   render() {
     const { classes } = this.props;
     return (
       <div className={classes.wrapper}>
-        <Spinner listenLoad={['etFieldsContentType', 'sendFieldsContentType',]} />
+        <Spinner listenLoad={['getFieldsContentType', 'sendFieldsContentType',]} />
        {
          this.state.init &&
-         <Form 
-          fields={this.state.fields} 
+         <Form
+          fields={this.state.fields}
           onPressButton={this.sendData} 
           onChangeFields={fields => this.setState({fields})} 
         />
@@ -63,6 +75,5 @@ class EditContentType extends Component {
     )
   }
 }
-
 
 export default EditContentType;
