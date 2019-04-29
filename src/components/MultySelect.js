@@ -41,8 +41,8 @@ class MultySelect extends Component {
     label: PropTypes.string,
     contentType: PropTypes.string,
     selected: PropTypes.arrayOf(PropTypes.shape({
-      id: PropTypes.number,
-      title: PropTypes.string,
+      value: PropTypes.number,
+      label: PropTypes.string,
     })),
     onChange: PropTypes.func,
   }
@@ -72,7 +72,7 @@ class MultySelect extends Component {
     .then(contentType => {
       let list = []
       for (let item of contentType.result) {
-        if (!this.state.selected.find(({id}) => id === item.id)) {
+        if (!this.state.selected.find(({value}) => value === item.value)) {
           list.push(item)
         }
       }
@@ -158,7 +158,7 @@ class MultySelect extends Component {
         <Typography>{title}:</Typography>
         <List className={classes.list} ref={ref => this[name] = ref} >
           {
-            list.map(({id, title, checked}, index) => (
+            list.map(({label, checked}, index) => (
               <ListItem 
                 key={index} 
                 button
@@ -169,7 +169,7 @@ class MultySelect extends Component {
                   tabIndex={-1}
                   disableRipple
                 />
-                <ListItemText>{ title }</ListItemText>
+                <ListItemText>{ label }</ListItemText>
               </ListItem>
             ))
           }

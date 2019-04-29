@@ -78,10 +78,10 @@ class ContentTypes extends Component {
         <List className={classes.list}>
           {
             all.map((item, index) => (
-              <ListItem key={index} button onClick={() => history.push(`${path}/${item.id}`)}>
-                { !item.title.match(/<[^>]+/g)
-                  ? <ListItemText primary={item.title} />
-                  : <div dangerouslySetInnerHTML={{ __html: item.title }} />
+              <ListItem key={index} button onClick={() => history.push(`${path}/${item.value}`)}>
+                { !item.label.match(/<[^>]+/g)
+                  ? <ListItemText primary={item.label} />
+                  : <div dangerouslySetInnerHTML={{ __html: item.label }} />
                 }
               </ListItem>
             ))

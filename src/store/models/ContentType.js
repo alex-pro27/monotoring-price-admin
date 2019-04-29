@@ -2,28 +2,28 @@ import { observable } from 'mobx';
 
 class ContentType {
   
-  id
+  value
   @observable name
   @observable plural
-  @observable title
+  @observable label
   @observable permissions = []
   @observable content_type
 
-  static create({id, title, name, content_type, plural, permissions=[]}) {
+  static create({value, label, name, content_type, plural, permissions=[]}) {
     let contentType = new ContentType();
     [
-      contentType.id,
+      contentType.value,
+      contentType.label,
       contentType.name,
       contentType.content_type,
       contentType.plural,
-      contentType.title,
       contentType.permissions
     ] = [
-      id,
+      value,
+      label,
       name,
       content_type,
       plural,
-      title,
       permissions
     ]
     return contentType

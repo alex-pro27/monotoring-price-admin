@@ -80,17 +80,33 @@ class ContentTypesStore {
                 break;
               case 'has_many':
               case 'many_to_many':
-              // case 'belongs_to':
                 fields[name] = {
                   label,
                   value: value || [],
                   name,
                   changed: false,
                   contentType: content_type,
-                  type: type === 'belongs_to' ? 'select1' : 'multy_select',
-                  сonvert: items => items.map(({id}) => id),
+                  type: 'multy_select',
+                  сonvert: items => items.map(({value}) => value),
                 }
                 break;
+              case 'belongs_to':
+              fields[name] = {
+                label,
+                width: '80%',
+                value,
+                name,
+                changed: false,
+                contentType: content_type,
+                type: 'select',
+                сonvert: ({value}) => value,
+              }
+          
+          
+              break
+          
+                
+              
             }
           }
           resolve({title: contentType.meta.title, fields})

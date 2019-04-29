@@ -10,6 +10,8 @@ import Button from '@material-ui/core/Button';
 import text from '../constants/text';
 import { Typography } from '@material-ui/core';
 import MultySelect from './MultySelect';
+import Select from './Select';
+import { isObject } from '../helpers/helpres';
 
 
 const styles = theme => ({
@@ -63,8 +65,12 @@ export default class Forms extends Component {
       if (Array.isArray(value)) {
         if (
           value.length !== this.state.initFields[name].value.length
-          || _.differenceBy(value, this.state.initFields[name].value, 'id').length
+          || _.differenceBy(value, this.state.initFields[name].value, 'value').length
           ) {
+          return true
+        }
+      }else if (isObject(value)) {
+        if (value.value !== (this.state.initFields[name].value || {}).value) {
           return true
         }
       } else {
@@ -85,14 +91,8 @@ export default class Forms extends Component {
     return false;
   }
 
-  _changeMultySelect = name => (value) => {
-    let fields = Object.assign({}, this.props.fields)
-    fields[name].value = value
-    fields[name].onChange && fields[name].onChange(value)
-    this.props.onChangeFields(fields)
-  }
-
-  _changeDropDown = name => ({target: {value}}) => {
+  _changeSelect = name => (value) => {
+    console.log("onChange",name, value)
     let fields = Object.assign({}, this.props.fields)
     fields[name].value = value
     fields[name].onChange && fields[name].onChange(value)
@@ -159,7 +159,7 @@ export default class Forms extends Component {
   _renderFields() {
     const { classes, fields } = this.props;
     return Object.entries(fields).map(
-      ([name, { value, type, label, error, required, multiple, maxLength, placeHolder, width, options, disabled, contentType }], index) => {
+      ([name, { value, type, label, error, required, itemValue, maxLength, placeHolder, width, disabled, contentType }], index) => {
         if (type == "checkbox") {
           return (
             <div key={name}>
@@ -187,45 +187,29 @@ export default class Forms extends Component {
            )
         } else if (type === 'select') {
           return (
-            <TextField
-              id={name}
+            <Select
               key={name}
-              style={{width: width || 'auto'}}
-              select
-              displayEmpty
+              width={width}
               required={required}
               label={label}
-              multiple={multiple}
               disabled={disabled}
-              className={classes.textField}
               value={value}
-              onChange={this._changeDropDown(name)}
-              SelectProps={{
-                MenuProps: {
-                  className: classes.menu,
-                },
-              }}
-              helperText={placeHolder}
-              margin="normal"
-            >
-              {options.map(option => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          ) 
+              onChange={this._changeSelect(name)}
+              placeHolder={placeHolder}
+              contentType={contentType}
+              itemValue={itemValue}
+            />
+          )
         } if (type === "hidden") {
           return <input key={name} value={value} id={name} name={name} type={type} />
         } else if (type === 'multy_select') {
           return (
             <MultySelect
               key={name}
-              name={name}
               label={label}
               selected={value}
               contentType={contentType}
-              onChange={this._changeMultySelect(name)}
+              onChange={this._changeSelect(name)}
             />
           )
         } else {
