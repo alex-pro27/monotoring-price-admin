@@ -9,7 +9,7 @@ export function TextField({
   changed = false,
   maxLength = 250,
   placeHolder = '',
-  type = "input",
+  type = "string",
   check = () => "",
   transform = value => value.toString().trim()
 }) {

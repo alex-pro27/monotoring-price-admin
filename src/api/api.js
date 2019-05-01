@@ -92,11 +92,12 @@ export default class Api {
    * @param {*} id - content-type
    * @param {*} page - номер страницы
    */
-  async allContentTypes({page, content_type_id, content_type_name}) {
+  async allContentTypes({page, content_type_id, content_type_name, keyword, short, order_by}) {
+    console.log("allcontentType", content_type_name, short)
     return this.request(
       () => this._rest.get(
         ALL_CONTENT_TYPES,
-        {page, content_type_id, content_type_name}, {},
+        {page, content_type_id, content_type_name, keyword, short, order_by}, {},
         {loadName: 'allContentTypes', cacheTimelife: 0}
       )
     )
@@ -122,7 +123,7 @@ export default class Api {
    * @param {*} id
    * @param {*} content_type_id 
    */
-  async sendFieldsContentType(content_type_id, fields, del=false) {
+  async sendFieldsContentType(content_type_id, fields, del = false) {
     const method = del ? 'delete': fields.id === 0 ? 'put' : 'post';
     let action = method === 'put' ? 'create' : fields.id
     return this.request(

@@ -4,6 +4,7 @@ import Api from '../api/api'
 import ContentType from './models/ContentType';
 import Paginate from './models/Paginate';
 import { TextField, PhoneField, EmailField } from '../helpers/fields';
+import moment from 'moment';
 
 class ContentTypesStore {
 
@@ -13,25 +14,84 @@ class ContentTypesStore {
   @observable plural
   @observable paginate = {}
   @observable page = 1
+  @observable keyword
+  @observable sortFields = []
+  @observable extraFields = []
+  @observable short = true
+  @observable activeSort = {}
+  @observable orderBy
+  contentTypeID
 
-  getAll({page = this.page, content_type_name = null, content_type_id = null}) {
-    this.clear()
+  @action activateSort(name) {
+    let activeSort = Object.assign({}, this.activeSort)
+    if (!activeSort[name]) {
+      activeSort[name] = 'desc'
+    } else if (activeSort[name] === 'asc') {
+        activeSort[name] = false
+    } else {
+      activeSort[name] = 'asc'
+    }
+    this.activeSort = activeSort
+  }
+
+  getAll({
+    page,
+    keyword,
+    content_type_name, 
+    content_type_id,
+    short = false,
+    order_by,
+  }) {
+    this.clear(content_type_id)
+    page = page || this.page
+    keyword = keyword || this.keyword
+    order_by = order_by || this.orderBy
     this.page = page
+    this.keyword = keyword
+    this.orderBy = order_by
     return new Promise(resolve => {
-      this.getList(...arguments).then(contentType => {
+      this.getList({
+        page,
+        keyword,
+        content_type_name, 
+        content_type_id,
+        short,
+        order_by
+      }).then(contentType => {
         runInAction(() => {
           this.name = contentType.meta.name
           this.plural = contentType.meta.plural
+          this.short = contentType.meta.short
           contentType.paginate && (this.paginate = Paginate.create(contentType.paginate))
-          contentType.result && (this.all = contentType.result.map(v => ContentType.create({...v, ...contentType.meta})))
+          if (contentType.meta.short) {
+            contentType.result && (this.all = contentType.result.map(v => ContentType.create({...v, ...contentType.meta})))
+          } else {
+            contentType.result && (this.all = contentType.result)
+            this.sortFields = contentType.sort_fields || []
+            this.extraFields = contentType.extra_fields || []
+          }
         })
         resolve()
       })
     })
   }
 
-  getList({page = 1, content_type_name = null, content_type_id = null}) {
-    return this.api.allContentTypes({page, content_type_name, content_type_id})
+  getList({
+    page = 1, 
+    content_type_name, 
+    content_type_id,
+    keyword,
+    short = true,
+    order_by
+  }) {
+    return this.api.allContentTypes({
+      page, 
+      content_type_name, 
+      content_type_id,
+      keyword,
+      short,
+      order_by
+    })
   }
 
   sendData(content_type_id, fields) {
@@ -44,11 +104,12 @@ class ContentTypesStore {
       .then(
         contentType => {
           let fields = {}
-          for (let { disabled, type, value, name, required, label, content_type } of contentType.fields) {
+          for (let { disabled, type, value, name, required, label, content_type, options } of contentType.fields) {
             switch (type) {
               case 'string':
               case 'text':
               case 'number':
+              case 'datetime-local':
               case 'date':
                 let field = TextField
                 if (name === 'phone') {
@@ -58,11 +119,14 @@ class ContentTypesStore {
                 }
                 fields[name] = field({
                   disabled: !!id && disabled, 
-                  type: type == 'text'? 'textarea': 'input',
+                  type,
                   label,
                   value,
                   required,
                 })
+                if (['datetime-local', "date"].indexOf(type) > -1) {
+                  fields[name].convert = (datetime) => moment(datetime).format("YYYY-MM-DDThh:mm:ss")
+                }
                 break;
               case 'switch':
               case 'checkbox':
@@ -84,29 +148,33 @@ class ContentTypesStore {
                   label,
                   value: value || [],
                   name,
-                  changed: false,
                   contentType: content_type,
                   type: 'multy_select',
-                  сonvert: items => items.map(({value}) => value),
+                  convert: items => items.map(({value}) => value),
                 }
                 break;
               case 'belongs_to':
-              fields[name] = {
-                label,
-                width: '80%',
-                value,
-                name,
-                changed: false,
-                contentType: content_type,
-                type: 'select',
-                сonvert: ({value}) => value,
-              }
-          
-          
-              break
-          
-                
-              
+                fields[name + "_id"] = {
+                  label,
+                  width: '80%',
+                  value,
+                  name: name + "_id",
+                  contentType: content_type,
+                  type: 'search_select',
+                  convert: (value) => value.value,
+                }
+                break
+                case 'choice':
+                  fields[name] = {
+                    label,
+                    width: '80%',
+                    value,
+                    name,
+                    options,
+                    type: 'select',
+                    convert: (value) => value.value,
+                  }
+                break
             }
           }
           resolve({title: contentType.meta.title, fields})
@@ -116,10 +184,17 @@ class ContentTypesStore {
     })
   }
 
-  @action clear() {
+  @action clear(contentTypeID) {
     this.all = []
-    // this.name = null
-    // this.plural = null
+    if (this.contentTypeID !== contentTypeID) {
+      this.sortFields = []
+      this.orderBy = null
+      this.activeSort = {}
+      this.keyword = null
+      this.name = null
+      this.plural = null
+      this.contentTypeID = contentTypeID
+    }
   }
 
 }

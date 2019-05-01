@@ -181,7 +181,7 @@ const components = {
 @withStyles(styles, { withTheme: true })
 @inject("contentTypesStore")
 @observer
-export default class Select extends Component {
+export default class SearchSelect extends Component {
   
   static propsTypes = {
     name: PropTypes.string,
@@ -196,8 +196,15 @@ export default class Select extends Component {
     placeHolder: PropTypes.string,
     contentType: PropTypes.string,
     onChange: PropTypes.func,
+    multiple: PropTypes.bool,
     classes: PropTypes.object.isRequired,
     theme: PropTypes.object.isRequired,
+    options: PropTypes.arrayOf(
+      PropTypes.shape({
+        value: PropTypes.number,
+        label: PropTypes.string,
+      })
+    )
   }
 
   static defaultProps = {
@@ -216,14 +223,21 @@ export default class Select extends Component {
       page: 1,
       paginate: {}
     }
-    this.getList()
+    if (this.props.contentType) {
+      this.getList()
+    } else {
+      this.state.options = this.props.options || []
+    }
   }
 
   getList(page = 1) {
     this.props.contentTypesStore
     .getList({page, content_type_name: this.props.contentType})
     .then(contentType => {
-      let options = [{value: "", label: "Пусто"}]
+      let options = []
+      if (!this.props.required) {
+        options.push({value: "", label: "Пусто"})
+      }
       this.props.value && options.push(this.props.value)
       for (let item of contentType.result) {
         if (this.props.value && this.props.value.value === item.value) {
@@ -231,7 +245,6 @@ export default class Select extends Component {
         }
         options.push(item)
       }
-      console.log(options)
       this.setState({
         paginate: Paginate.create(contentType.paginate),
         page: page,
@@ -242,10 +255,11 @@ export default class Select extends Component {
   }
   
   render() {
-    const { 
+    const {
       name, 
       width, 
-      required, 
+      required,
+      multiple,
       label, 
       disabled,
       placeHolder, 
@@ -274,6 +288,7 @@ export default class Select extends Component {
             components={components}
             classes={classes}
             disabled={disabled}
+            isMulti={multiple}
             textFieldProps={{
               label,
               InputLabelProps: {

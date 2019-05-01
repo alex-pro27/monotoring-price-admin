@@ -3,6 +3,7 @@ import _ from 'lodash';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
 import Switch from '@material-ui/core/Switch';
 import Button from '@material-ui/core/Button';
@@ -10,7 +11,7 @@ import Button from '@material-ui/core/Button';
 import text from '../constants/text';
 import { Typography } from '@material-ui/core';
 import MultySelect from './MultySelect';
-import Select from './Select';
+import SearchSelect from './SearchSelect';
 import { isObject } from '../helpers/helpres';
 
 
@@ -141,10 +142,10 @@ export default class Forms extends Component {
 
   onPressButton() {
     let data = {}
-    Object.entries(this.props.fields).forEach(([name, {value, type, сonvert}]) => {
-      let _value;
-      if (сonvert instanceof Function) {
-        _value = сonvert(value)
+    Object.entries(this.props.fields).forEach(([name, {value, type, convert}]) => {
+      let _value
+      if (convert instanceof Function) {
+        _value = value && convert(value)
       } else {
         _value = value;
       }
@@ -159,7 +160,7 @@ export default class Forms extends Component {
   _renderFields() {
     const { classes, fields } = this.props;
     return Object.entries(fields).map(
-      ([name, { value, type, label, error, required, itemValue, maxLength, placeHolder, width, disabled, contentType }], index) => {
+      ([name, { value, type, label, error, required, itemValue, maxLength, placeHolder, width, disabled, contentType, options }], index) => {
         if (type == "checkbox") {
           return (
             <div key={name}>
@@ -185,9 +186,9 @@ export default class Forms extends Component {
               <label htmlFor={name}><Typography inline>{label}</Typography></label>
             </div>
            )
-        } else if (type === 'select') {
+        } else if (type === 'search_select') {
           return (
-            <Select
+            <SearchSelect
               key={name}
               width={width}
               required={required}
@@ -197,8 +198,32 @@ export default class Forms extends Component {
               onChange={this._changeSelect(name)}
               placeHolder={placeHolder}
               contentType={contentType}
+              options={options}
               itemValue={itemValue}
             />
+          )
+        } else if (type === 'select') {
+          return (
+            <TextField
+              key={name}
+              name={name}
+              label={label}
+              select
+              style={{width: width || 'auto'}}
+              required={required}
+              value={value.value}
+              onChange={({target: value}) => this._changeSelect(name)(value)}
+              margin="normal"
+              className={classes.textField}
+            >
+              {
+                options.map(({label, value}, i) => (
+                  <MenuItem key={i} value={value}>
+                    <Typography>{label}</Typography>
+                  </MenuItem>
+                ))
+              }
+            </TextField>
           )
         } if (type === "hidden") {
           return <input key={name} value={value} id={name} name={name} type={type} />
@@ -224,11 +249,15 @@ export default class Forms extends Component {
               label={label}
               required={required}
               inputProps={{maxLength: maxLength}}
-              multiline={type === 'textarea'}
+              type={type}
+              multiline={type === 'text'}
               className={classes.textField}
               value={value}
               onChange={this._checkFields(name)}
               margin="normal"
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
           )
         }

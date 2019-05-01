@@ -21,8 +21,19 @@ export const RegisterRoutes = [
   },
   {
     path: "/users",
-    component: Users,
+    component: ContentTypes,
     icon: "people",
+    menu: true,
+    children: [
+      {
+        path: "/:id",
+        component: EditContentType,
+      },
+    ]
+  },
+  {
+    path: "/monitoring-types",
+    component: ContentTypes,
     menu: true,
     children: [
       {

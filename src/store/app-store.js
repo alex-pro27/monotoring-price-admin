@@ -87,6 +87,9 @@ class AppStore {
           }
         }
       } else {
+        // for (let [path, view] of this.avilableViews) {
+          
+        // }
         RegisterRoutes.forEach(route => {
           const view = this.avilableViews.get(route.path)
           view && addRoute(route, view)

@@ -12,6 +12,7 @@ class View {
   permission = []
   path
   content_type
+  view_type
 
   static create({
     content_type_id, 
@@ -21,7 +22,8 @@ class View {
     content_type, 
     plural, 
     parent_id, 
-    path, 
+    path,
+    view_type,
     children, 
     permission
   }) {
@@ -33,6 +35,7 @@ class View {
       view.icon,
       view.parent_id,
       view.path,
+      view.view_type,
       view.content_type,
       view.plural
     ] = [
@@ -42,6 +45,7 @@ class View {
       icon,
       parent_id,
       path,
+      view_type,
       content_type,
       plural
     ]
