@@ -134,7 +134,7 @@ class MultySelect extends Component {
     this.setState(
       {[nameFrom]: from, [nameTo]: to, checked}, 
       () => {
-        ReactDOM.findDOMNode(this[nameTo]).scrollTo(0, 0)
+        ReactDOM.findDOMNode(this.refs[nameTo]).scrollTo(0, 0)
         this.props.onChange(this.state.selected)
         this.stopAddTo = false
       }
@@ -156,7 +156,7 @@ class MultySelect extends Component {
     return (
       <div className={classes.listWrapper}>
         <Typography>{title}:</Typography>
-        <List className={classes.list} ref={ref => this[name] = ref} >
+        <List className={classes.list} ref={name} >
           {
             list.map(({label, checked}, index) => (
               <ListItem 

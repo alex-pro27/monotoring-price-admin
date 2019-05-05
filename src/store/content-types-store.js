@@ -20,6 +20,7 @@ class ContentTypesStore {
   @observable short = true
   @observable activeSort = {}
   @observable orderBy
+  @observable availableSearch = false
   contentTypeID
 
   @action activateSort(name) {
@@ -44,7 +45,7 @@ class ContentTypesStore {
   }) {
     this.clear(content_type_id)
     page = page || this.page
-    keyword = keyword || this.keyword
+    keyword = keyword === "" ? keyword : keyword || this.keyword
     order_by = order_by || this.orderBy
     this.page = page
     this.keyword = keyword
@@ -62,6 +63,7 @@ class ContentTypesStore {
           this.name = contentType.meta.name
           this.plural = contentType.meta.plural
           this.short = contentType.meta.short
+          this.availableSearch = contentType.meta.available_search
           contentType.paginate && (this.paginate = Paginate.create(contentType.paginate))
           if (contentType.meta.short) {
             contentType.result && (this.all = contentType.result.map(v => ContentType.create({...v, ...contentType.meta})))
@@ -71,7 +73,6 @@ class ContentTypesStore {
             this.extraFields = contentType.extra_fields || []
           }
         })
-        resolve()
       })
     })
   }
@@ -184,15 +185,21 @@ class ContentTypesStore {
     })
   }
 
+  @action clearOrderBy() {
+    this.orderBy = null
+  }
+
   @action clear(contentTypeID) {
     this.all = []
     if (this.contentTypeID !== contentTypeID) {
       this.sortFields = []
+      this.page = 1
       this.orderBy = null
       this.activeSort = {}
       this.keyword = null
       this.name = null
       this.plural = null
+      this.availableSearch = false
       this.contentTypeID = contentTypeID
     }
   }

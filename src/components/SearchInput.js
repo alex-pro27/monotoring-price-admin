@@ -29,6 +29,7 @@ class SearchInput extends Component {
     onChange: PropTypes.func,
     onSearch: PropTypes.func,
     placeHolder: PropTypes.string,
+    keyword: PropTypes.string
   }
 
   static defaultProps = {
@@ -36,13 +37,16 @@ class SearchInput extends Component {
     onSearch: () => void 0
   }
 
-  state = {
-    keyword: ""
+  constructor(props) {
+    super(props);
+    this.state = {
+       keyword: this.props.keyword || ""
+    }
   }
 
   onChange = ({target: {value}}) => {
-    this.setState({keyword: value})
     this.props.onChange(value)
+    this.setState({keyword: value})
   }
 
   render() {
@@ -50,6 +54,7 @@ class SearchInput extends Component {
     return (
       <Paper className={classes.root} elevation={1}>
         <InputBase 
+          value={this.state.keyword}
           onChange={this.onChange} 
           className={classes.input} 
           placeholder={this.props.placeHolder} 

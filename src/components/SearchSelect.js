@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom'
-import RSelect from 'react-select';
+import AsyncSelect from 'react-select/lib/Async';
 import { observer, inject } from 'mobx-react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
@@ -161,10 +160,10 @@ function MultiValue(props) {
 
 function Menu(props) {
   return (
-    <Paper square className={props.selectProps.classes.paper} {...props.innerProps}>
+    <Paper square onScroll={props.selectProps.onScroll} className={props.selectProps.classes.paper} {...props.innerProps}>
       {props.children}
     </Paper>
-  );
+  )
 }
 
 const components = {
@@ -221,37 +220,75 @@ export default class SearchSelect extends Component {
       options: [],
       init: false,
       page: 1,
-      paginate: {}
+      paginate: {},
+      keyword: null,
     }
-    if (this.props.contentType) {
-      this.getList()
-    } else {
+    if (!this.props.contentType) {
       this.state.options = this.props.options || []
+      this.state.init = true
     }
   }
 
-  getList(page = 1) {
+  getList({page = this.state.page, keyword = null, callback = null}) {
+    this.loading = true
     this.props.contentTypesStore
-    .getList({page, content_type_name: this.props.contentType})
+    .getList({page, content_type_name: this.props.contentType, keyword})
     .then(contentType => {
       let options = []
-      if (!this.props.required) {
+      let update = this.state.paginate.current_page !== page
+      if (keyword !== this.state.keyword) {
+        page = 1
+        update = false
+      }
+      if (update) {
+        options = this.state.options
+      }
+      if (!update && !this.props.required) {
         options.push({value: "", label: "Пусто"})
       }
-      this.props.value && options.push(this.props.value)
-      for (let item of contentType.result) {
+      if (!update) {
+        this.props.value && options.push(this.props.value)
+      } 
+      for (let item of contentType.result || []) {
         if (this.props.value && this.props.value.value === item.value) {
           continue
         }
         options.push(item)
       }
+      if (!this.state.init) {
+        this.state.paginate = Paginate.create(contentType.paginate)
+      }
       this.setState({
-        paginate: Paginate.create(contentType.paginate),
-        page: page,
+        page,
         options,
-        init: true
-      })
-    })
+        keyword,
+        init: true,
+      }, () => typeof callback === 'function' && callback(this.state.options))
+    }).finally(() => this.loading = false)
+  }
+
+  loadOptions = (keyword, callback) => {
+    if (!this.props.contentType) { 
+      const res = this.state
+      .options
+      .filter(({label}) => label.toLowerCase().indexOf(keyword.toLowerCase()) > -1)
+      callback(res)
+    } else {
+      this.getList({keyword, callback})
+    }
+  }
+
+  onScroll = ({target}) => {
+    if (!this.loading && target.scrollTop >= target.scrollHeight - target.offsetHeight - 500) {
+      if (this.state.page < this.state.paginate.count_page) {
+        this.setState({page: this.state.page + 1}, () => {
+          this.refs.async.setState({ isLoading: true })
+          this.refs.async.loadOptions('', (options) => {
+            this.refs.async.setState({ defaultOptions: [].concat(options) || [], isLoading: false })
+          })
+        })
+      }
+    }
   }
   
   render() {
@@ -276,15 +313,16 @@ export default class SearchSelect extends Component {
           font: 'inherit',
         },
       }),
-    };
+    }
     return (
-      this.state.init &&
       <div className={classes.root}>
         <NoSsr>
-          <RSelect
+          <AsyncSelect
             id={name}
             key={name}
+            ref={'async'}
             styles={selectStyles}
+            onScroll={this.onScroll}
             components={components}
             classes={classes}
             disabled={disabled}
@@ -298,7 +336,9 @@ export default class SearchSelect extends Component {
             value={value}
             placeholder={placeHolder}
             onChange={(value) => this.props.onChange(value)}
-            options={this.state.options}
+            cacheOptions
+            defaultOptions
+            loadOptions={this.loadOptions}
             isClearable
           />
         </NoSsr>

@@ -91,6 +91,7 @@ class ContentTypes extends Component {
         .filter(([name, sort]) => sort)
         .map(([name, sort]) => sort === 'desc' ? `-${name}`: name)
         .join(",")
+        this.props.contentTypesStore.clearOrderBy()
         this.props.contentTypesStore.getAll({
           content_type_id: this.contentTypeID,
           order_by,
@@ -202,7 +203,9 @@ class ContentTypes extends Component {
       contentTypesStore: {
         name,
         paginate,
-        short
+        short,
+        availableSearch,
+        keyword
       },
       match: { path },
     } = this.props
@@ -211,12 +214,16 @@ class ContentTypes extends Component {
       <div className={classes.wrapper}>
         <Spinner listenLoad={['allContentTypes',]} />
         <div className={classes.controlBlock}>
-          <div style={{margin: "auto 15px"}}>
-            <SearchInput
-              onSearch={(keyword) => this.props.contentTypesStore.getAll({keyword, content_type_id: this.contentTypeID})}
-              placeHolder={`Искать ${name}`} 
-             />
-          </div>
+          {
+            availableSearch &&
+            <div style={{margin: "auto 15px"}}>
+              <SearchInput
+                keyword={keyword}
+                onSearch={(keyword) => this.props.contentTypesStore.getAll({keyword, content_type_id: this.contentTypeID})}
+                placeHolder={`Искать ${name}`} 
+              />
+            </div>
+          }
           <Button 
             onClick={() => history.push(`${path}/new`)}
             variant="contained" 
