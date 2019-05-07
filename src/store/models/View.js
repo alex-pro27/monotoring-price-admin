@@ -13,13 +13,15 @@ class View {
   path
   content_type
   view_type
+  menu
 
   static create({
     content_type_id, 
-    view_id, 
+    view_id,
     name,
     icon, 
-    content_type, 
+    content_type,
+    menu,
     plural, 
     parent_id, 
     path,
@@ -37,7 +39,8 @@ class View {
       view.path,
       view.view_type,
       view.content_type,
-      view.plural
+      view.plural,
+      view.menu
     ] = [
       content_type_id,
       view_id,
@@ -47,7 +50,8 @@ class View {
       path,
       view_type,
       content_type,
-      plural
+      plural,
+      menu,
     ]
     view.addPermission(permission || [])
     view.children = view.addChildren(children || [])

@@ -12,6 +12,8 @@ import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
 import Checkbox from '@material-ui/core/Checkbox';
+import Spinner from './Spinner';
+import SearchInput from './SearchInput';
 
 const styles = theme => ({
   root: {
@@ -56,8 +58,11 @@ class MultySelect extends Component {
     this.state = {
       list: [],
       page: 1,
+      isSearched: false,
+      loading: false,
       paginate: {},
       selected: this.props.selected || [],
+      noData: false,
       checked: {
         list: [],
         selected: [],
@@ -66,22 +71,39 @@ class MultySelect extends Component {
     this.getList();
   }
 
-  getList(page = 1) {
+  getList({page = this.state.page, keyword = this.state.keyword} = {}) {
+    this.setState({loading: true})
     this.props.contentTypesStore
-    .getList({page, content_type_name: this.props.contentType})
+    .getList({page, content_type_name: this.props.contentType, keyword})
     .then(contentType => {
-      let list = []
+      let options = [].concat(this.state.list)
+      let update = this.state.paginate.current_page !== page
+      if (keyword !== this.state.keyword) {
+        page = 1
+        update = false
+      }
+      if (!update) {
+        options = []
+        this.props.value && options.push(this.props.value)
+      }
       for (let item of contentType.result) {
         if (!this.state.selected.find(({value}) => value === item.value)) {
-          list.push(item)
+          options.push(item)
         }
       }
+      if (!this.state.init) {
+        this.state.paginate = Paginate.create(contentType.paginate)
+      }
       this.setState({
-        paginate: Paginate.create(contentType.paginate),
-        page: page,
-        list,
+        page,
+        list: options,
+        keyword,
+        init: true,
+        isSearched: contentType.meta.available_search
       })
     })
+    .catch(e => this.setState({noData: true}))
+    .finally(() => this.setState({loading: false}))
   }
 
   clear(oppositeName) {
@@ -91,7 +113,7 @@ class MultySelect extends Component {
           break
         }
         indexes.forEach(i => this.state[name][i].checked = false)
-        this.state.checked[name] = []
+        this.setState({[name]: []})
         break
       }
     }
@@ -134,7 +156,8 @@ class MultySelect extends Component {
     this.setState(
       {[nameFrom]: from, [nameTo]: to, checked}, 
       () => {
-        ReactDOM.findDOMNode(this.refs[nameTo]).scrollTo(0, 0)
+        const elem = ReactDOM.findDOMNode(this.refs[nameTo])
+        elem && elem.scrollTo(0, 0)
         this.props.onChange(this.state.selected)
         this.stopAddTo = false
       }
@@ -150,30 +173,64 @@ class MultySelect extends Component {
     return false
   }
 
+  onScroll = (name) => ({target}) => {
+    if (name !== "list") return
+    if (!this.state.loading && target.scrollTop >= target.scrollHeight - target.offsetHeight) {
+      if (this.state.page < this.state.paginate.count_page) {
+        this.getList({page: this.state.page + 1})
+      }
+    }
+  }
+
+  onSearch = (keyword) => {
+    this.getList({page:1, keyword, update: false})
+  }
+
   _renderSelectList(title, name) {
     const { classes } = this.props
     const list = this.state[name]
     return (
       <div className={classes.listWrapper}>
         <Typography>{title}:</Typography>
-        <List className={classes.list} ref={name} >
+        <div style={{position: 'relative'}}>
           {
-            list.map(({label, checked}, index) => (
-              <ListItem 
-                key={index} 
-                button
-                onClick={this.handleToggle(name, index)}
-              >
-                <Checkbox
-                  checked={!!checked}
-                  tabIndex={-1}
-                  disableRipple
-                />
-                <ListItemText>{ label }</ListItemText>
-              </ListItem>
-            ))
+            name === 'list' && this.state.isSearched &&
+            <div>
+              <SearchInput
+                placeHolder="Поиск" 
+                keyword={this.state.keyword} 
+                onSearch={this.onSearch} 
+              />
+            </div>
           }
-        </List>
+          {
+            name === 'list' && this.state.loading &&
+            <Spinner />
+          }
+          <List
+            style={{marginTop: this.state.isSearched && name !== 'list' ? 50 : 'auto'}} 
+            onScroll={this.onScroll(name)} 
+            className={classes.list}
+            ref={name}
+          >
+            {
+              list.map(({label, checked}, index) => (
+                <ListItem
+                  key={index} 
+                  button
+                  onClick={this.handleToggle(name, index)}
+                >
+                  <Checkbox
+                    checked={!!checked}
+                    tabIndex={-1}
+                    disableRipple
+                  />
+                  <ListItemText>{ label }</ListItemText>
+                </ListItem>
+              ))
+            }
+          </List>
+        </div>
       </div>
     )
   }

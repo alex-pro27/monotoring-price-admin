@@ -33,34 +33,57 @@ class AppStore {
     if (this.isAuth) {
       let routes = []
       const addRoute = (route, extra={}) => {
-        const exchidren = [].concat(extra.children || [])
         routes.push({
           path: route.path,
           component: route.component,
           icon: extra.icon || route.icon,
-          menu: route.menu,
+          menu: extra.menu || route.menu,
           title: extra.name || extra.plural || route.title,
           permission: extra.permission,
         })
+        let exchidren = [].concat(extra.children || [])
         if (Array.isArray(route.children)) {
-          route.children.forEach(child => {
-            const exchild = exchidren.find((x) => x.path === child.path) || {}
-            addRoute(
-              {
-                 ...child, 
-                 path: route.path + child.path, 
-                 title: exchild.name || exchild.plural || child.title,
-              },
-              exchild,
-            )
+        let children = [].concat(route.children) 
+          children.forEach((child, i) => {
+            const index = exchidren.findIndex((x) => x.path === child.path)
+            const extraChild = exchidren[index] || {}
+            let path = route.path
+            if (extraChild.view_type === 2) {
+              path = route.path + '/:id'
+            }
+            addRoute({...child, path}, extraChild)
+            exchidren.splice(i, index)
           })
         }
+        exchidren.forEach(extraChild => {
+          let component, title, path
+          if (extraChild.view_type === 1) {
+            component = ContentTypes
+            title = extraChild.plural || name
+            path = extraChild.path
+
+          } else if (extraChild.view_type === 2) {
+            component = EditContentType
+            title = `Добавить ${extraChild.name}`
+            path = `${route.path}/:id`
+          }
+          addRoute({
+            path: extraChild.path,
+            component,
+            icon: "view_carousel",
+            title,
+            menu: extraChild.menu,
+            path 
+          }, {
+            permission: Permission.create(extraChild.permission),
+            children: extraChild.children,
+          })
+        })
       }
       const accessPerm = Permission.create({access: 7})
       if (this.isSuperUser) {
-        const paths = [...this.avilableViews.keys()]
         for (let route of RegisterRoutes) {
-          if (paths.indexOf(route.path) === -1) {
+          if (!this.avilableViews.get(route.path)) {
             route = {permission: accessPerm, ...route}
             routes.push(route)
           }
@@ -71,11 +94,11 @@ class AppStore {
             addRoute(route, view)
           } else {
             routes.push({
-              title: view.plural || view.name ,
+              title: view.plural || view.name,
               path: path,
               permission: view.permission,
               menu: true,
-              icon: 'view_carousel',
+              icon: view.icon || 'view_carousel',
               component: ContentTypes
             })
             routes.push({
@@ -87,14 +110,38 @@ class AppStore {
           }
         }
       } else {
-        // for (let [path, view] of this.avilableViews) {
-          
-        // }
-        RegisterRoutes.forEach(route => {
-          const view = this.avilableViews.get(route.path)
-          view && addRoute(route, view)
+        let _routes = [].concat(RegisterRoutes)
+        RegisterRoutes.forEach((route, i) => {
+          if (this.avilableViews.get(route.path)) {
+            addRoute(route, this.avilableViews.get(route.path))
+            _routes.splice(i, 1)
+          }
         })
+        for (let [path, view] of this.avilableViews) {
+          if (routes.find(r => r.path === path)) {
+            continue
+          }
+          let component, title
+          if (view.view_type === 1) {
+            component = ContentTypes
+            title = view.plural || view.name
+          } else if (view.view_type === 2) {
+            component = EditContentType
+            title = `Добавить ${view.name}`
+          }
+          addRoute({
+            path,
+            component,
+            icon: view.icon,
+            title,
+            menu: view.menu,
+          }, {
+            permission: Permission.create(view.permission),
+            children: view.children,
+          })
+        }
       }
+      console.log("routes",routes)
       return routes
     } else {
       return RegisterRoutes
@@ -139,7 +186,7 @@ class AppStore {
     })
   }
 
-  setToken(token) {
+  setToken(token) { 
     this.api._rest.setToken(token)
   }
 

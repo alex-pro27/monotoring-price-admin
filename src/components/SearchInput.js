@@ -11,7 +11,7 @@ const styles = {
     padding: '2px 4px',
     display: 'flex',
     alignItems: 'center',
-    width: 400,
+    border: 'solid 1px #eee'
   },
   input: {
     marginLeft: 8,
@@ -52,7 +52,7 @@ class SearchInput extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Paper className={classes.root} elevation={1}>
+      <Paper className={classes.root} elevation={0}>
         <InputBase 
           value={this.state.keyword}
           onChange={this.onChange} 

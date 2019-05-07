@@ -83,7 +83,7 @@ class ContentTypesStore {
     content_type_id,
     keyword,
     short = true,
-    order_by
+    order_by,
   }) {
     return this.api.allContentTypes({
       page, 
@@ -112,6 +112,7 @@ class ContentTypesStore {
               case 'number':
               case 'datetime-local':
               case 'date':
+              case 'password':
                 let field = TextField
                 if (name === 'phone') {
                   field = PhoneField

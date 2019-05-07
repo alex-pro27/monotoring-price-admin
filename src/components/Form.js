@@ -242,6 +242,7 @@ export default class Forms extends Component {
             <TextField
               key={name}
               id={name}
+              autoComplete={""}
               error={!!error}
               style={{width: width || 'auto'}}
               helperText={error}
@@ -252,7 +253,7 @@ export default class Forms extends Component {
               type={type}
               multiline={type === 'text'}
               className={classes.textField}
-              value={value}
+              value={value || ""}
               onChange={this._checkFields(name)}
               margin="normal"
               InputLabelProps={{

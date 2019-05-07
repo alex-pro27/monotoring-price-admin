@@ -27,17 +27,19 @@ class EditContentType extends Component {
   }
 
   componentDidMount() {
-    console.log("EditContentType props",this.props)
     const id = parseInt(this.props.match.params.id) || 0
     const path = this.props.match.path.replace('/:id', '')
-    const contentTypeID = this.props.appStore.avilableViews.get(path).content_type_id
-    this.setState({ contentTypeID })
-    this.props.contentTypesStore.select({content_type_id: contentTypeID, id}).then(
-      ({title, fields}) => {
-        title && this.props.setTitle(`Редактировать ${title}`)
-        this.setState({fields, init: true})
-      }
-    )
+    const contentType = this.props.appStore.avilableViews.get(path)
+    if (contentType) {
+      const contentTypeID = this.props.appStore.avilableViews.get(path).content_type_id
+      this.setState({ contentTypeID })
+      this.props.contentTypesStore.select({content_type_id: contentTypeID, id}).then(
+        ({title, fields}) => {
+          title && this.props.setTitle(`Редактировать ${title}`)
+          this.setState({fields, init: true})
+        }
+      )
+    }
   }
 
   sendData = (fields, rollback) => {

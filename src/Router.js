@@ -5,9 +5,8 @@ import { PublicRoute } from 'react-router-with-props';
 import Login from './screen/Login';
 import Index from './screen/Index';
 import Route404 from './screen/Route404';
-import EditContentType from './screen/EditContentType';
-import ContentTypes from './screen/ContentTypes';
-import Users from './screen/Users';
+// import EditContentType from './screen/EditContentType';
+// import ContentTypes from './screen/ContentTypes';
 import { observer, inject } from 'mobx-react';
 import { observe } from 'mobx';
 
@@ -19,29 +18,17 @@ export const RegisterRoutes = [
     icon: "home",
     menu: true
   },
-  {
-    path: "/users",
-    component: ContentTypes,
-    icon: "people",
-    menu: true,
-    children: [
-      {
-        path: "/:id",
-        component: EditContentType,
-      },
-    ]
-  },
-  {
-    path: "/monitoring-types",
-    component: ContentTypes,
-    menu: true,
-    children: [
-      {
-        path: "/:id",
-        component: EditContentType,
-      },
-    ]
-  },
+  // {
+  //   path: "/monitoring-types",
+  //   component: ContentTypes,
+  //   menu: true,
+  //   children: [
+  //     {
+  //       path: "/:id",
+  //       component: EditContentType,
+  //     },
+  //   ]
+  // },
 ]
 
 @inject('appStore')
