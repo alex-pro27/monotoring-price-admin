@@ -14,6 +14,7 @@ import Icon from '@material-ui/core/Icon';
 import Checkbox from '@material-ui/core/Checkbox';
 import Spinner from './Spinner';
 import SearchInput from './SearchInput';
+import moment from 'moment';
 
 const styles = theme => ({
   root: {
@@ -61,12 +62,15 @@ class MultySelect extends Component {
       isSearched: false,
       loading: false,
       paginate: {},
+      toHTML: "",
       selected: this.props.selected || [],
       noData: false,
       checked: {
         list: [],
         selected: [],
       },
+      isOpen: false,
+      showImage: null
     }
     this.getList();
   }
@@ -99,6 +103,7 @@ class MultySelect extends Component {
         list: options,
         keyword,
         init: true,
+        toHTML: contentType.meta.toHTML,
         isSearched: contentType.meta.available_search
       })
     })
@@ -113,7 +118,7 @@ class MultySelect extends Component {
           break
         }
         indexes.forEach(i => this.state[name][i].checked = false)
-        this.setState({[name]: []})
+        this.state.checked[name] = []
         break
       }
     }
@@ -188,6 +193,7 @@ class MultySelect extends Component {
 
   _renderSelectList(title, name) {
     const { classes } = this.props
+    const { toHTML } = this.state
     const list = this.state[name]
     return (
       <div className={classes.listWrapper}>
@@ -225,7 +231,21 @@ class MultySelect extends Component {
                     tabIndex={-1}
                     disableRipple
                   />
-                  <ListItemText>{ label }</ListItemText>
+                  { 
+                    !toHTML
+                    ? <ListItemText>{ label }</ListItemText>
+                    : toHTML === "image"
+                    ? <img 
+                        src={label.replace(/(.*)\.(?:jp?g|png|gif)/ig, '$1_thumb.jpg')} 
+                        alt='' 
+                        style={{width: 100, height: 100}} 
+                      /> 
+                    : ["date", "datetime"].indexOf(toHTML) > -1
+                    ? label.split(",").map(date => (
+                      <ListItemText>{moment(date).format(toHTML === "date" ? "LL": "LLL")}</ListItemText>
+                    ))
+                    : <div dangerouslySetInnerHTML={{ __html: value }} />
+                  }
                 </ListItem>
               ))
             }

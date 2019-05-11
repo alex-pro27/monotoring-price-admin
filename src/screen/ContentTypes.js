@@ -1,4 +1,5 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
+import ReactDOM from 'react-dom'
 import { observer, inject } from 'mobx-react';
 import { observe } from 'mobx';
 import { withStyles } from '@material-ui/core/styles';
@@ -8,19 +9,24 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Spinner from '../components/Spinner';
 import PaginateComponent from '../components/Paginate';
 import Button from '@material-ui/core/Button';
-import ButtonBase from '@material-ui/core/ButtonBase';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Lightbox from 'react-image-lightbox';
 
 import AppWrapper from '../components/AppWrapper';
 import SearchInput from '../components/SearchInput';
-import { Divider } from '@material-ui/core';
+import classnames from 'classnames';
+import moment from 'moment';
 
-const styles = theme => console.log(theme.palette) || ({
+const styles = theme => ({
   
   wrapper: {
-    height: window.innerHeight - 64,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -37,24 +43,16 @@ const styles = theme => console.log(theme.palette) || ({
     padding: '10px 15px',
     width: '100%'
   },
-  tableBody: {
+  tableWarapper: {
     width: '100%',
     overflow: 'auto',
+    marginTop: 25,
   },
-
-  tableRowBase: {
-    width: '100%', 
-    display: "flex", 
-    flexDirection: "row", 
-    justifyContent: "start",
-    minWidth: 500,
-  },
-
-  tableHederRow: {
-    marginTop: "20px",
+  tableHead: {
     backgroundColor: theme.palette.grey['200']
   },
   tableRow: {
+    cursor: 'pointer',
     '&:nth-of-type(odd)': {
       backgroundColor: theme.palette.background.default,
     },
@@ -62,9 +60,8 @@ const styles = theme => console.log(theme.palette) || ({
       backgroundColor: theme.palette.action.hover
     },
   },
-  tableCol: {
+  tableCell: {
     minHeight: "48px",
-    width: "100%",
     textAlign: 'left',
     padding: "12px 15px"
   },
@@ -81,12 +78,17 @@ class ContentTypes extends Component {
 
   contentTypeID = 0
 
+  state = {
+    isOpen: false,
+    showImage: null,
+  }
+
   componentDidMount() {
     this.contentTypeID = this.props.appStore.avilableViews.get(this.props.match.path).content_type_id
-    this.props.contentTypesStore.getAll({content_type_id: this.contentTypeID})
+    this.props.contentTypesStore
+    .getAll({content_type_id: this.contentTypeID})
     this.disposers = [
       observe(this.props.contentTypesStore, 'activeSort', ({ newValue }) => {
-        console.log("observe", newValue)
         const order_by = Object.entries(newValue)
         .filter(([name, sort]) => sort)
         .map(([name, sort]) => sort === 'desc' ? `-${name}`: name)
@@ -98,14 +100,22 @@ class ContentTypes extends Component {
         })
       }),
     ]
+    this.onResize = () => this.forceUpdate()
+    window.addEventListener("resize", this.onResize)
   }
 
   componentWillUnmount() {
     this.disposers.forEach(d => d())
+    window.removeEventListener("resize", this.onResize)
   }
 
   sortHandler = name => event => {
     this.props.contentTypesStore.activateSort(name)
+  }
+
+  onScrollTable = ({target}) =>  {
+    let thead = ReactDOM.findDOMNode(this.refs.thead)
+    thead.style.transform = "translate(0,"+ target.scrollTop + "px)";
   }
 
   renderSortField() {
@@ -116,60 +126,104 @@ class ContentTypes extends Component {
       match: { path },
     } = this.props
     return (
-      <Fragment>
-        <div className={[classes.tableRowBase, classes.tableHederRow].join(" ")}>
-          {
-            extraFields.map(({label}, i) => (
-              <div key={i} className={classes.tableCol}>
-                <Typography className={classes.disabledSort} variant={"body2"}>{label}</Typography>
-              </div>
-            ))
-          }
-          {
-            sortFields.map(({label, name}, i) => (
-              <div key={i} className={classes.tableCol}>
-                <TableSortLabel
-                  active={!!activeSort[name]}
-                  direction={activeSort[name] || 'asc'}
-                  onClick={this.sortHandler(name)}
-                >
-                  <Typography variant={"body2"}>{label}</Typography>
-                </TableSortLabel>
-              </div>
-            ))
-          }
-        </div>
-        <Divider/>
-        <Paper elevation={0} className={classes.tableBody}>
-          {
-            all.map((row, i) => (
-              <Fragment key={i}>
-                <ButtonBase
-                  focusRipple
-                  className={[classes.tableRowBase, classes.tableRow].join(" ")}
+      <Paper onScroll={this.onScrollTable} elevation={0} className={classes.tableWarapper}>
+        <Table>
+          <TableHead ref={"thead"} className={classes.tableHead}>
+            <TableRow>
+            {
+              extraFields.map(({label}, i) => (
+                <TableCell key={i} className={classes.tableCell}>
+                  <Typography className={classes.disabledSort} variant={"body2"}>{label}</Typography>
+                </TableCell>
+              ))
+            }
+            {
+              sortFields.map(({label, name}, i) => (
+                <TableCell key={i} className={classes.tableCell}>
+                  <TableSortLabel
+                    active={!!activeSort[name]}
+                    direction={activeSort[name] || 'asc'}
+                    onClick={this.sortHandler(name)}
+                  >
+                    <Typography variant={"body2"}>{label}</Typography>
+                  </TableSortLabel>
+                </TableCell>
+              ))
+            }
+            </TableRow>
+          </TableHead>
+          <TableBody className={classes.tableBody}>
+            {
+              all.map((row, index) => (
+                <TableRow
+                  key={index}
                   onClick={() => history.push(`${path}/${row.id}`)}
-                >
-                  {
-                    extraFields.map(({name}, i) => (
-                      <div key={i} className={classes.tableCol}>
-                        <Typography>{typeof row[name] === "boolean"? row[name]? "Да": "Нет" : row[name]}</Typography>
-                      </div>
-                    ))
-                  }
-                  {
-                    sortFields.map(({name}, i) => (
-                      <div key={i} className={classes.tableCol}>
-                        <Typography>{typeof row[name] === "boolean"? row[name]? "Да": "Нет" : row[name]}</Typography>
-                      </div>
-                    ))
-                  }
-                </ButtonBase>
-                <Divider/>
-              </Fragment>
-            ))
-          }
-        </Paper>
-      </Fragment>
+                  className={classnames(classes.tableRow)}>
+                  
+                    {
+                      extraFields.map(({name, toHTML}, i) => (
+                        <TableCell ref={'td'+ i} key={i} className={classes.tableCell}>
+                          {this.renderValue(row[name], toHTML)}
+                        </TableCell>
+                      ))
+                    }
+                    {
+                      sortFields.map(({name, toHTML}, i) => (
+                        <TableCell ref={'td' + (i + extraFields.length)} key={i} className={classes.tableCol}>
+                          {this.renderValue(row[name], toHTML)}
+                        </TableCell>
+                      ))
+                    }
+                </TableRow>
+                ))
+              }
+            </TableBody>
+          </Table>
+      </Paper>
+    )
+  }
+
+  onClickImg = (event) => {
+    event.stopPropagation()
+    if (event.target.src) {
+      this.setState({
+        isOpen: true,
+        showImage: event.target.src.replace(/(.*)_thumb\.(jpe?g|png|gif)/g, "$1.$2")
+      })
+    }
+  }
+
+  renderValue(value, toHTML) {
+    const {contentTypesStore: {short}} = this.props
+    if (typeof value === 'boolean') {
+      value =  value ? "Да": "Нет"
+    } else if (toHTML === "image") {
+      value = value && value.split(",").map(
+        path => path.replace(/(.*)\.(jp?g|png|gif)/ig, '$1_thumb.$2')
+       )
+    }
+    let Text = ({value}) => <ListItemText primary={value} />
+    if (!short) {
+      Text = ({value}) => <Typography>{value}</Typography>
+    }
+    return (
+      !toHTML
+      ? <Text value={value} />
+      : toHTML === "image"
+      ? value && value.map((path, i) => (
+        <img 
+          key={i} 
+          src={path} 
+          alt='' 
+          onClick={this.onClickImg}
+          style={{width: 100, height: 100, padding: 8}}
+        />
+      )) 
+      : ["date", "datetime"].indexOf(toHTML) > -1
+      ? value.split(",").map((date, i) => (
+        <Text key={i} value={moment(date).format(toHTML === "date" ? "LL": "LLL")}/>
+      ))
+      : <div dangerouslySetInnerHTML={{ __html: value }} />
     )
   }
 
@@ -177,7 +231,7 @@ class ContentTypes extends Component {
     const {
       classes,
       history,
-      contentTypesStore: { all },
+      contentTypesStore: { all, toHTML },
       match: { path },
     } = this.props
     return (
@@ -185,10 +239,7 @@ class ContentTypes extends Component {
         {
           all.map((item, index) => (
             <ListItem key={index} button onClick={() => history.push(`${path}/${item.value}`)}>
-              { !item.label.match(/<[^>]+/g)
-                ? <ListItemText primary={item.label} />
-                : <div dangerouslySetInnerHTML={{ __html: item.label }} />
-              }
+              { this.renderValue(item.label, toHTML) }
             </ListItem>
           ))
         }
@@ -211,8 +262,16 @@ class ContentTypes extends Component {
     } = this.props
 
     return (
-      <div className={classes.wrapper}>
+      <div className={classes.wrapper} style={{height: window.innerHeight - 64}}>
         <Spinner listenLoad={['allContentTypes',]} />
+        {
+          this.state.isOpen && (
+          <Lightbox
+              mainSrc={this.state.showImage}
+              onCloseRequest={() => this.setState({ isOpen: false })}
+            />
+          )
+        }
         <div className={classes.controlBlock}>
           {
             availableSearch &&
@@ -230,7 +289,7 @@ class ContentTypes extends Component {
             color="secondary"
             className={classes.button}
           >
-            { `Новый ${name}` }
+            { `Новый(ая) ${name}` }
           </Button>
         </div>
         <PaginateComponent 

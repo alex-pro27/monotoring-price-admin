@@ -226,7 +226,7 @@ export default class Forms extends Component {
             </TextField>
           )
         } if (type === "hidden") {
-          return <input key={name} value={value} id={name} name={name} type={type} />
+            return <input key={name} value={value} id={name} name={name} type={type} />
         } else if (type === 'multy_select') {
           return (
             <MultySelect

@@ -22,6 +22,7 @@ class ContentTypesStore {
   @observable orderBy
   @observable availableSearch = false
   contentTypeID
+  toHTML
 
   @action activateSort(name) {
     let activeSort = Object.assign({}, this.activeSort)
@@ -64,6 +65,7 @@ class ContentTypesStore {
           this.plural = contentType.meta.plural
           this.short = contentType.meta.short
           this.availableSearch = contentType.meta.available_search
+          this.toHTML = contentType.meta.toHTML
           contentType.paginate && (this.paginate = Paginate.create(contentType.paginate))
           if (contentType.meta.short) {
             contentType.result && (this.all = contentType.result.map(v => ContentType.create({...v, ...contentType.meta})))
@@ -72,6 +74,7 @@ class ContentTypesStore {
             this.sortFields = contentType.sort_fields || []
             this.extraFields = contentType.extra_fields || []
           }
+          resolve()
         })
       })
     })
@@ -113,6 +116,7 @@ class ContentTypesStore {
               case 'datetime-local':
               case 'date':
               case 'password':
+              case 'array':
                 let field = TextField
                 if (name === 'phone') {
                   field = PhoneField

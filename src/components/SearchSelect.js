@@ -268,7 +268,7 @@ export default class SearchSelect extends Component {
   }
 
   loadOptions = (keyword, callback) => {
-    if (!this.props.contentType) { 
+    if (!this.props.contentType || this.state.page === this.state.paginate.count_page) { 
       const res = this.state
       .options
       .filter(({label}) => label.toLowerCase().indexOf(keyword.toLowerCase()) > -1)

@@ -9,6 +9,11 @@ import Dialog from './components/Dialog';
 import Router from './Router';
 import text from './constants/text';
 import Spinner from './components/Spinner';
+import moment  from 'moment';
+import 'moment/locale/ru';
+import 'react-image-lightbox/style.css';
+
+moment.locale("ru")
 
 @observer
 class App extends Component {
