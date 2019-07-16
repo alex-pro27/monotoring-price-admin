@@ -125,12 +125,12 @@ class Wares extends Component {
     thead.style.transform = "translate(0,"+ target.scrollTop + "px)";
   }
 
-  onChangeInputFile = (event) => {
-    const file = event.target.files[0]
-    this.props.appStore.api.updateWares(file).then(() => {
-      window.openMessage("Товары обновлены", "success");
-      this.componentDidMount()
+  onChangeInputFile = ({target}) => {
+    const file = target.files[0]
+    this.props.appStore.api.updateWares(file).then(_ => {
+      window.openMessage("Обновление товаров добавленно в задание...", "success");
     })
+    target.value = null;
   }
 
   renderSortField() {

@@ -2,6 +2,7 @@ import { observable, action, runInAction, computed } from 'mobx';
 import _ from "lodash";
 import { persist } from 'mobx-persist';
 import Api from '../api/api';
+import TornadoWebSocket from '../api/websocket';
 import Admin  from './models/Admin';
 import Permission  from './models/Permission';
 import userStore from './users-store';
@@ -148,6 +149,22 @@ class AppStore {
     }
   }
 
+  createSocket() {
+    this.socket = new TornadoWebSocket("/api/admin/ws")
+    this.socket.on("open", () => {
+      this.socket.on("on_connect", message => {
+        console.log("on connected", message)
+      })
+      this.socket.on("on_update_products", message => {
+        console.log("on on_update_products", message)
+        window.openMessage("Товары обновлены", "success");
+      })
+      this.socket.emit("connect", {
+        token: this.admin.token
+      })
+    })
+  }
+
   login({username, password}) {
      return new Promise(resolve => {
       this.api.login({username, password})
@@ -193,7 +210,10 @@ class AppStore {
   checkAuth() {
     return new Promise((resolve, reject) => {
       this.api.checkAuth().then(
-        () => resolve(),
+        () => {
+          this.createSocket();
+          resolve()
+        },
         () => {
           this.logout()
           reject()

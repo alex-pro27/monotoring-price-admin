@@ -8,7 +8,7 @@ export default class TornadoWebSocket {
         enumerable: false,
         configurable: true,
         writable: false,
-        value: SOCKET_SERVER + '/ws' + url
+        value: SOCKET_SERVER + url
     });
 
     Object.defineProperty(this, 'options', {
