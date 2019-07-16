@@ -127,7 +127,10 @@ class Wares extends Component {
 
   onChangeInputFile = (event) => {
     const file = event.target.files[0]
-    this.props.appStore.api.updateWares(file)
+    this.props.appStore.api.updateWares(file).then(() => {
+      window.openMessage("Товары обновлены", "success");
+      this.componentDidMount()
+    })
   }
 
   renderSortField() {
@@ -305,8 +308,8 @@ class Wares extends Component {
               onChange={this.onChangeInputFile}
             />
             <label htmlFor="contained-button-file">
-              <Button variant="contained" className={classes.button}>
-               Обновить товары из файла
+              <Button variant="contained" component="span" className={classes.button}>
+                Обновить товары из файла
               </Button>
             </label>
             <Button 
