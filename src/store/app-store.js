@@ -172,6 +172,7 @@ class AppStore {
         console.log(userData)
         runInAction(() => this.admin = Admin.create(userData))
         this.setToken(userData.token)
+        this.createSocket();
         return this.getAvailableViews()
       })
       .then(resolve)
