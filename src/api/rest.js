@@ -107,7 +107,7 @@ export default class RestService {
       return this._getPrefLoad();
     }
     this._prefLoads.push(_pref);
-    return [_pref, ()=>this._prefLoads.filter(x=> x !== _pref)];
+    return [_pref, ()=>this._prefLoads.filter(x => x !== _pref)];
   }
 
   _addToLoads(loadName) {

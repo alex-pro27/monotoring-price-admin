@@ -160,7 +160,7 @@ export default class Forms extends Component {
   _renderFields() {
     const { classes, fields } = this.props;
     return Object.entries(fields).map(
-      ([name, { value, type, label, error, required, itemValue, maxLength, placeHolder, width, disabled, contentType, options }], index) => {
+      ([name, { value, type, label, error, required, itemValue, maxLength, placeHolder, width, disabled, contentType, groups, groupBy, options }], index) => {
         if (type == "checkbox") {
           return (
             <div key={name}>
@@ -234,6 +234,8 @@ export default class Forms extends Component {
               label={label}
               selected={value}
               contentType={contentType}
+              groupBy={groupBy}
+              groups={groups}
               onChange={this._changeSelect(name)}
             />
           )

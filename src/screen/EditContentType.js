@@ -43,7 +43,6 @@ class EditContentType extends Component {
   }
 
   sendData = (fields, rollback) => {
-    console.log("sendData", fields)
     this.props.contentTypesStore
     .sendData(this.state.contentTypeID, fields)
     .then(() => window.openMessage("Успешно!", "success"))

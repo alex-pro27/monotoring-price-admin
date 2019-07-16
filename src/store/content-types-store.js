@@ -43,6 +43,7 @@ class ContentTypesStore {
     content_type_id,
     short = false,
     order_by,
+    group_by,
   }) {
     this.clear(content_type_id)
     page = page || this.page
@@ -58,7 +59,8 @@ class ContentTypesStore {
         content_type_name, 
         content_type_id,
         short,
-        order_by
+        order_by,
+        group_by
       }).then(contentType => {
         runInAction(() => {
           this.name = contentType.meta.name
@@ -87,6 +89,7 @@ class ContentTypesStore {
     keyword,
     short = true,
     order_by,
+    group_by,
   }) {
     return this.api.allContentTypes({
       page, 
@@ -94,7 +97,8 @@ class ContentTypesStore {
       content_type_id,
       keyword,
       short,
-      order_by
+      order_by,
+      group_by
     })
   }
 
@@ -108,7 +112,7 @@ class ContentTypesStore {
       .then(
         contentType => {
           let fields = {}
-          for (let { disabled, type, value, name, required, label, content_type, options } of contentType.fields) {
+          for (let { disabled, type, value, name, required, label, content_type, group_by, options } of contentType.fields) {
             switch (type) {
               case 'string':
               case 'text':
@@ -156,6 +160,8 @@ class ContentTypesStore {
                   name,
                   contentType: content_type,
                   type: 'multy_select',
+                  groupBy: group_by,
+                  groups: contentType.groups,
                   convert: items => items.map(({value}) => value),
                 }
                 break;

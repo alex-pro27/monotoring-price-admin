@@ -34,6 +34,15 @@ export const ALL_CONTENT_TYPES = '/api/admin/content-types'
 export const ACTION_FIELDS_CONTENT_TYPE = '/api/admin/content-type/:action'
 
 /**
+ * Обновить товары из файла
+ */
+export const UPDATE_WARES = '/api/admin/update-wares'
+/**
+ * Шаблон файла для обновления товаров
+ */
+export const GET_PRODUCT_TEMPLATE_FILE = '/api/admin/product-template-file'
+
+/**
  * Websocket админа
  */
 export const WS_ADMIN = '/admin'

@@ -6,6 +6,7 @@ import {
   GET_AVAILABLE_VIEWS,
   ALL_CONTENT_TYPES,
   ACTION_FIELDS_CONTENT_TYPE,
+  UPDATE_WARES,
 } from '../constants/urls';
 import RestService from './rest';
 
@@ -92,12 +93,12 @@ export default class Api {
    * @param {*} id - content-type
    * @param {*} page - номер страницы
    */
-  async allContentTypes({page, content_type_id, content_type_name, keyword, short, order_by}) {
+  async allContentTypes({page, content_type_id, content_type_name, keyword, short, order_by, group_by}) {
     console.log("allcontentType", content_type_name, short)
     return this.request(
       () => this._rest.get(
         ALL_CONTENT_TYPES,
-        {page, content_type_id, content_type_name, keyword, short, order_by}, {},
+        {page, content_type_id, content_type_name, keyword, short, order_by, group_by}, {},
         {loadName: 'allContentTypes', cacheTimelife: 0}
       )
     )
@@ -131,6 +132,15 @@ export default class Api {
         ACTION_FIELDS_CONTENT_TYPE.replace(':action', action),
         {content_type_id, fields: JSON.stringify(fields)}, {},
         {loadName: 'sendFieldsContentType', cacheTimelife: 0}
+      )
+    )
+  }
+
+  async updateWares(file) {
+    return this.request(
+      () => this._rest.post(
+        UPDATE_WARES, 
+        {update_wares: file}, {}, {loadName: "updateWares", cacheTimelife: 0}
       )
     )
   }

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import ReactDOM from 'react-dom'
 import { observer, inject } from 'mobx-react';
 import PropTypes from 'prop-types';
@@ -6,6 +6,9 @@ import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import Collapse from '@material-ui/core/Collapse';
 import Paginate from '../store/models/Paginate';
 import { Typography } from '@material-ui/core';
 import Divider from '@material-ui/core/Divider';
@@ -16,7 +19,7 @@ import Spinner from './Spinner';
 import SearchInput from './SearchInput';
 import moment from 'moment';
 
-const styles = theme => ({
+const styles = theme => console.log(theme) || ({
   root: {
     padding: '15px 0',
   },
@@ -27,12 +30,15 @@ const styles = theme => ({
     justifyContent: 'space-around',
   },
   list: {
-    maxHeight: 300,
+    maxHeight: 450,
     overflow: 'auto',
   },
   listWrapper: {
     width: '50%'
-  }
+  },
+  nested: {
+    paddingLeft: 25,
+  },
 })
 
 @withStyles(styles)
@@ -65,11 +71,19 @@ class MultySelect extends Component {
       toHTML: "",
       selected: this.props.selected || [],
       noData: false,
+      groups: this.props.groups || {},
+      groupsChecked: {
+        list: {},
+        selected: {},
+      },
       checked: {
         list: [],
         selected: [],
       },
-      isOpen: false,
+      isOpen: {
+        list: {},
+        selected: {},
+      },
       showImage: null
     }
     this.getList();
@@ -78,9 +92,10 @@ class MultySelect extends Component {
   getList({page = this.state.page, keyword = this.state.keyword} = {}) {
     this.setState({loading: true})
     this.props.contentTypesStore
-    .getList({page, content_type_name: this.props.contentType, keyword})
+    .getList({page, content_type_name: this.props.contentType, keyword, group_by: this.props.groupBy})
     .then(contentType => {
       let options = [].concat(this.state.list)
+      let groups = Object.assign(contentType.groups || {}, this.state.groups)
       let update = this.state.paginate.current_page !== page
       if (keyword !== this.state.keyword) {
         page = 1
@@ -102,9 +117,10 @@ class MultySelect extends Component {
         page,
         list: options,
         keyword,
+        groups,
         init: true,
         toHTML: contentType.meta.toHTML,
-        isSearched: contentType.meta.available_search
+        isSearched: contentType.meta.available_search,
       })
     })
     .catch(e => this.setState({noData: true}))
@@ -122,9 +138,26 @@ class MultySelect extends Component {
         break
       }
     }
+    for (let [name, groupIDX] of Object.entries(this.state.groupsChecked)) {
+      if (oppositeName !== name) { 
+        if (!Object.keys(groupIDX).length) {
+          break;
+        }
+        Object.keys(groupIDX).forEach(groupID => {
+          this.state.groupsChecked[name][groupID] = false
+        })
+        break
+      }
+    }
   }
 
-  handleToggle = (name, index) => () => {
+  openOrCloseGroup = (name, groupID) => event => {
+    let isOpen = Object.assign({}, this.state.isOpen)
+    isOpen[name][groupID] = !isOpen[name][groupID]
+    this.setState({ isOpen })
+  }
+
+  handleToggle = (name, index) => event => {
     if (this.stopToggle) return
     this.stopToggle = true
     this.clear(name)
@@ -137,6 +170,26 @@ class MultySelect extends Component {
       checked[name] = checked[name].filter(i => i !== index)
     }
     this.setState({[name]: fields, checked}, () => this.stopToggle = false)
+  }
+
+  handleToggleGroup = (name, groupID) => event => {
+    if (this.stopToggle) return
+    this.clear(name)
+    let fields = [].concat(this.state[name])
+    let checked = Object.assign({}, this.state.checked)
+    let groupsChecked = Object.assign({}, this.state.groupsChecked)
+    groupsChecked[name][groupID] = !groupsChecked[name][groupID]
+    fields.forEach((field, index) => {
+      if (field.group_id == groupID) {
+        field.checked = groupsChecked[name][groupID]
+        if (field.checked) {
+          checked[name].push(index)
+        } else {
+          checked[name] = checked[name].filter(i => i !== index)
+        }
+      }
+    })
+    this.setState({ groupsChecked, fields, checked }, () => this.stopToggle = false)
   }
 
   addTo = () => {
@@ -154,12 +207,21 @@ class MultySelect extends Component {
     let from = [].concat(this.state[nameFrom])
     let to = [].concat(this.state[nameTo])
     let checked = Object.assign({}, this.state.checked)
+    let groupsChecked = Object.assign({}, this.state.groupsChecked)
+    let isOpen = Object.assign({}, this.state.isOpen)
     to.unshift(...checked[nameFrom].map(i => from[i]))
+    if (this.props.groupBy) {
+      checked[nameFrom].forEach(i => {
+        groupsChecked[nameFrom][from[i].group_id] = false;
+        groupsChecked[nameTo][from[i].group_id] = true;
+        isOpen[nameTo] = Object.assign({}, isOpen[nameFrom])
+      })
+    }
     checked[nameFrom].sort((a, b) => b - a).forEach(i => from.splice(i, 1))
     checked[nameTo] = Array.from(new Array(checked[nameFrom].length)).map((_, i) => i)
     checked[nameFrom] = []
     this.setState(
-      {[nameFrom]: from, [nameTo]: to, checked}, 
+      {[nameFrom]: from, [nameTo]: to, isOpen, groupsChecked, checked},
       () => {
         const elem = ReactDOM.findDOMNode(this.refs[nameTo])
         elem && elem.scrollTo(0, 0)
@@ -191,7 +253,95 @@ class MultySelect extends Component {
     this.getList({page:1, keyword, update: false})
   }
 
+  _renderGroupSelectList(title, name) {
+    const { classes } = this.props
+    const list = this.state[name]
+    let groups = {}
+
+    list.forEach((it, index) => {
+      if (!groups[it.group_id]) {
+        groups[it.group_id] = [];
+      }
+      groups[it.group_id].push(
+        (
+          <ListItem 
+            key={index} 
+            button 
+            onClick={this.handleToggle(name, index)}
+            className={classes.nested}
+          >
+            <Checkbox
+              checked={!!it.checked}
+              tabIndex={-1}
+              onChange={this.handleToggle(name, index)}
+            />
+            <ListItemText>{it.label}</ListItemText>
+          </ListItem>
+        )
+      )
+    })
+
+    return (
+      <div className={classes.listWrapper}>
+        <Typography>{title}:</Typography>
+        <div style={{position: 'relative'}}>
+          {this._renderSearchInput(name)}
+          {
+            name === 'list' && this.state.loading &&
+            <Spinner />
+          }
+          <List
+            style={{marginTop: this.state.isSearched && name !== 'list' ? 50 : 'auto'}} 
+            onScroll={this.onScroll(name)}
+            className={classes.list}
+            ref={name}
+          >
+          {
+            Object.entries(groups).map(([groupID, items], index) => (
+              <Fragment key={index}>
+                <ListItem button onClick={this.openOrCloseGroup(name, groupID)}>
+                  <Fragment>
+                  <Checkbox
+                    checked={!!this.state.groupsChecked[name][groupID]}
+                    tabIndex={-1}
+                    onChange={this.handleToggleGroup(name, groupID)}
+                    onClick={event => event.stopPropagation()}
+                  />
+                    <ListItemText>{ this.state.groups[groupID] }</ListItemText>
+                    {this.state.isOpen[name][groupID] ? <ExpandLess /> : <ExpandMore />}
+                  </Fragment>
+                </ListItem>
+                <Collapse in={this.state.isOpen[name][groupID]} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding>
+                    {items}
+                  </List>
+                </Collapse>
+              </Fragment>
+            ))
+          }
+          </List>
+        </div>
+      </div>
+    )
+  }
+
+  _renderSearchInput(name) {
+    return (
+      name === 'list' && this.state.isSearched &&
+      <div>
+        <SearchInput
+          placeHolder="Поиск" 
+          keyword={this.state.keyword} 
+          onSearch={this.onSearch} 
+        />
+      </div>
+    )
+  }
+
   _renderSelectList(title, name) {
+    if (this.props.groupBy) {
+      return this._renderGroupSelectList(title, name)
+    }
     const { classes } = this.props
     const { toHTML } = this.state
     const list = this.state[name]
@@ -199,37 +349,28 @@ class MultySelect extends Component {
       <div className={classes.listWrapper}>
         <Typography>{title}:</Typography>
         <div style={{position: 'relative'}}>
-          {
-            name === 'list' && this.state.isSearched &&
-            <div>
-              <SearchInput
-                placeHolder="Поиск" 
-                keyword={this.state.keyword} 
-                onSearch={this.onSearch} 
-              />
-            </div>
-          }
+          {this._renderSearchInput(name)}
           {
             name === 'list' && this.state.loading &&
             <Spinner />
           }
           <List
             style={{marginTop: this.state.isSearched && name !== 'list' ? 50 : 'auto'}} 
-            onScroll={this.onScroll(name)} 
+            onScroll={this.onScroll(name)}
             className={classes.list}
             ref={name}
           >
             {
               list.map(({label, checked}, index) => (
-                <ListItem
-                  key={index} 
+                <ListItem 
+                  key={index}
                   button
                   onClick={this.handleToggle(name, index)}
                 >
                   <Checkbox
                     checked={!!checked}
                     tabIndex={-1}
-                    disableRipple
+                    onChange={this.handleToggle(name, index)}
                   />
                   { 
                     !toHTML
