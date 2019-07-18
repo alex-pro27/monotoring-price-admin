@@ -27,8 +27,12 @@ export default class Api {
    * Проверить на активность сессии пользователя
    */
   async checkAuth() {
-    await this.request(
+    return await this.request(
       () => this._rest.post(CHECK_AUTH, {}, {}),
+      userInfo => {
+        this._rest.setToken(userInfo.token)
+        return userInfo;
+      }
     )
   }
 
@@ -43,7 +47,6 @@ export default class Api {
       ),
       userInfo => {
         this._rest.setToken(userInfo.token)
-        console.log(userInfo)
         return userInfo;
       }
     )

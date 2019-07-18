@@ -155,9 +155,9 @@ class AppStore {
       this.socket.on("on_connect", message => {
         console.log("on connected", message)
       })
-      this.socket.on("on_update_products", message => {
+      this.socket.on("on_update_products", ({message, error}) => {
         console.log("on on_update_products", message)
-        window.openMessage("Товары обновлены", "success");
+        window.openMessage(message, error ? "error" : "success");
       })
       this.socket.emit("connect", {
         token: this.admin.token
@@ -211,7 +211,8 @@ class AppStore {
   checkAuth() {
     return new Promise((resolve, reject) => {
       this.api.checkAuth().then(
-        () => {
+        (userData) => {
+          runInAction(() => this.admin = Admin.create(userData))
           this.createSocket();
           resolve()
         },
