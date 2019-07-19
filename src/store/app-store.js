@@ -17,6 +17,7 @@ class AppStore {
   socket = null
   @persist('object', Admin) @observable admin;
   @observable avilableViews = new Map()
+  @observable onUpdateProduct = 0;
 
   @computed get routesInMenu() {
     return this.routes.filter(({ menu }) => menu)
@@ -142,7 +143,6 @@ class AppStore {
           })
         }
       }
-      console.log("routes",routes)
       return routes
     } else {
       return RegisterRoutes
@@ -158,6 +158,9 @@ class AppStore {
       this.socket.on("on_update_products", ({message, error}) => {
         console.log("on on_update_products", message)
         window.openMessage(message, error ? "error" : "success");
+        if (!error) {
+          runInAction(() => this.onUpdateProduct++);
+        }
       })
       this.socket.emit("connect", {
         token: this.admin.token
@@ -229,6 +232,7 @@ class AppStore {
       this.clearAdmin();
       this.avilableViews = new Map();
       userStore.clear();
+      delete this.socket
     })
   }
 

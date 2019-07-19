@@ -11,6 +11,8 @@ export default class TornadoWebSocket {
         value: SOCKET_SERVER + url
     });
 
+    console.log("SOCKET_SERVER",SOCKET_SERVER)
+
     Object.defineProperty(this, 'options', {
       enumerable: false,
       configurable: true,

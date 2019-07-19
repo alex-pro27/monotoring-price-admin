@@ -106,6 +106,9 @@ class Wares extends Component {
           order_by,
         })
       }),
+      observe(this.props.appStore, "onUpdateProduct", () => {
+        this.props.contentTypesStore.getAll({content_type_id: this.contentTypeID})
+      })
     ]
     this.onResize = () => this.forceUpdate()
     window.addEventListener("resize", this.onResize)

@@ -84,7 +84,7 @@ module.exports = function(proxy, allowedHost) {
     historyApiFallback: true,
     proxy: {
         '/api': {
-            target: 'http://127.0.0.1:8888',
+            target: process.env.REACT_APP_PROXY_SERVER_API,
         },
     },
     before(app, server) {
