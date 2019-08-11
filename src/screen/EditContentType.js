@@ -68,7 +68,8 @@ class EditContentType extends Component {
          this.state.init &&
          <Form
           fields={this.state.fields}
-          onPressButton={this.sendData} 
+          onPressButton={this.sendData}
+          history={this.props.history} 
           onChangeFields={fields => this.setState({fields})} 
         />
        }

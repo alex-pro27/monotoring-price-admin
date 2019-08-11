@@ -7,6 +7,7 @@ import {
   ALL_CONTENT_TYPES,
   ACTION_FIELDS_CONTENT_TYPE,
   UPDATE_WARES,
+  GET_FILTERED_LIST
 } from '../constants/urls';
 import RestService from './rest';
 
@@ -28,7 +29,7 @@ export default class Api {
    */
   async checkAuth() {
     return await this.request(
-      () => this._rest.post(CHECK_AUTH, {}, {}),
+      () => this._rest.post(this._rest.getUrl(CHECK_AUTH), {}, {}),
       userInfo => {
         this._rest.setToken(userInfo.token)
         return userInfo;
@@ -42,7 +43,7 @@ export default class Api {
   async login({username, password}) {
     return await this.request(
       () => this._rest.post(
-        LOGIN, { username, password }, {}, 
+        this._rest.getUrl(LOGIN), { username, password }, {}, 
         {loadName: 'login'}
       ),
       userInfo => {
@@ -58,7 +59,7 @@ export default class Api {
   async logout() {
     return await this.request(
       () => this._rest.get(
-        LOGOUT, {}, {},
+        this._rest.getUrl(LOGOUT), {}, {},
         {loadName: 'logout', cacheTimelife: 0}
       ),
       () => this._rest.setToken(null)
@@ -72,7 +73,7 @@ export default class Api {
   async allUsers(page = null) {
     return this.request(
       () => this._rest.get(
-        ALL_USERS, { page }, {},
+        this._rest.getUrl(ALL_USERS), { page }, {},
         {loadName: 'allUsers', cacheTimelife: 0}
       )
     )
@@ -84,7 +85,7 @@ export default class Api {
   async getAvailableViews() {
     return this.request(
       () => this._rest.get(
-        GET_AVAILABLE_VIEWS,
+        this._rest.getUrl(GET_AVAILABLE_VIEWS),
         {}, {},
         {loadName: 'getAvailableViews', cacheTimelife: 0}
       )
@@ -93,16 +94,31 @@ export default class Api {
 
   /**
    * Получить список из табилцы по ID content_type
-   * @param {*} id - content-type
+   * @param {*} content_type_id - content-type
    * @param {*} page - номер страницы
    */
   async allContentTypes({page, content_type_id, content_type_name, keyword, short, order_by, group_by}) {
     console.log("allcontentType", content_type_name, short)
     return this.request(
       () => this._rest.get(
-        ALL_CONTENT_TYPES,
+        this._rest.getUrl(ALL_CONTENT_TYPES),
         {page, content_type_id, content_type_name, keyword, short, order_by, group_by}, {},
         {loadName: 'allContentTypes', cacheTimelife: 0}
+      )
+    )
+  }
+
+  /**
+   * Получить отфильтрованный список
+   * @param {*} content_type_id - 
+   * @param {*} content_type_name - 
+   */
+  async getFilteredList({content_type_id, content_type_name, field_name, value}) {
+    return this.request(
+      () => this._rest.get(
+        this._rest.getUrl(GET_FILTERED_LIST),
+        {content_type_id, content_type_name, field_name, value},
+        {loadName: 'getFilteredList', cacheTimelife: 0}
       )
     )
   }
@@ -115,7 +131,7 @@ export default class Api {
   async getFieldsContentType({id, content_type_id}) {
     return this.request(
       () => this._rest.get(
-        ACTION_FIELDS_CONTENT_TYPE.replace(':action', id),
+        this._rest.getUrl(ACTION_FIELDS_CONTENT_TYPE.replace(':action', id)),
         {content_type_id}, {},
         {loadName: 'getFieldsContentType', cacheTimelife: 0}
       )
@@ -132,18 +148,18 @@ export default class Api {
     let action = method === 'put' ? 'create' : fields.id
     return this.request(
       () => this._rest[method](
-        ACTION_FIELDS_CONTENT_TYPE.replace(':action', action),
+        this._rest.getUrl(ACTION_FIELDS_CONTENT_TYPE.replace(':action', action)),
         {content_type_id, fields: JSON.stringify(fields)}, {},
         {loadName: 'sendFieldsContentType', cacheTimelife: 0}
       )
     )
   }
 
-  async updateWares(file) {
+  async updateWares(file, is_update = false) {
     return this.request(
       () => this._rest.post(
-        UPDATE_WARES, 
-        {update_wares: file}, {}, {loadName: "updateWares", cacheTimelife: 0}
+        this._rest.getUrl(UPDATE_WARES), 
+        {update_wares: file, is_update}, {}, {loadName: "updateWares", cacheTimelife: 0}
       )
     )
   }

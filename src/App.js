@@ -31,14 +31,8 @@ class App extends Component {
       message: "",
       node: null,
       onClose: () => void 0,
-      yes: {
-        title: text.OK,
-        onPress: () => this.closeDialog()
-      },
-      no: {
-        title: text.CANCEL,
-        onPress: () => this.closeDialog()
-      }
+      yes: "",
+      no: ""
     }
   }
 
@@ -64,43 +58,21 @@ class App extends Component {
     })
   }
 
-  showDialog = ({title, message, yes, no, onClose, node}) => {
+  showDialog = ({title, message, yes, no, onClose = (ans) => void 0, node}) => {
     let dialog = Object.assign({}, this.state.dialog);
     dialog.message = message;
     if(yes && no) {
-      dialog.yes.onPress = () => (this.closeDialog() || yes())
-      dialog.no.onPress = () => (this.closeDialog() || no())
+      dialog.yes = typeof yes === "boolean" ? text.OK : yes;
+      dialog.no = typeof no === "boolean" ? text.CANCEL: no;
     } else if (yes) {
-      dialog.yes.onPress = () => (this.closeDialog() || yes())
+      dialog.yes = typeof yes === "boolean" ? text.OK : yes;
     } else {
-      dialog.yes = {
-        title: text.OK,
-        onPress: () => (this.closeDialog() || no && no())
-      }
-      dialog.negativeButton = null;
+      dialog.yes = typeof yes === "boolean" ? text.CANCEL : yes;
     }
-
     dialog.show = true;
     dialog.node = node;
     dialog.title = title;
-    
-    dialog.onClose = () => {
-      onClose && onClose();
-      // dialog.message = "";
-      // dialog.title = "";
-      // dialog.show = false;
-      // dialog.yes.onPress = this.closeDialog;
-      // dialog.no = {
-      //   title: text.OK,
-      //   onPress: this.closeDialog,
-      // }
-      // dialog.yes = {
-      //   title: text.CANCEL,
-      //   onPress: this.closeDialog
-      // }
-      // dialog.onClose = () => void 0;
-      // this.setState({ dialog });
-    }
+    dialog.onClose = ans => onClose(ans) || this.closeDialog();
     this.setState({ dialog });
   }
 
@@ -113,8 +85,15 @@ class App extends Component {
   }
 
   closeDialog = () => {
-    let dialog = Object.assign({}, this.state.dialog);
-    dialog.show = false;
+    let dialog = {
+      yes: "",
+      no: "",
+      onClose: (ans) => void 0,
+      title: "",
+      message: "",
+      show: false,
+      node: null
+    };
     this.setState({ dialog });
   }
 
@@ -132,7 +111,7 @@ class App extends Component {
         show={this.state.dialog.show}
         title={this.state.dialog.title}
         message={this.state.dialog.message}
-        onClose={() => this.state.dialog.onClose()}
+        onClose={this.state.dialog.onClose}
         yes={this.state.dialog.yes}
         no={this.state.dialog.no}
         node={this.state.dialog.node}

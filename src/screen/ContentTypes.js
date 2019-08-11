@@ -23,6 +23,7 @@ import AppWrapper from '../components/AppWrapper';
 import SearchInput from '../components/SearchInput';
 import classnames from 'classnames';
 import moment from 'moment';
+import { SERVER_ROOT } from '../constants/config';
 
 const styles = theme => ({
   
@@ -199,8 +200,8 @@ class ContentTypes extends Component {
       value =  value ? "Да": "Нет"
     } else if (toHTML === "image") {
       value = value && value.split(",").map(
-        path => path.replace(/(.*)\.(jp?g|png|gif)/ig, '$1_thumb.$2')
-       )
+        path => SERVER_ROOT + path.replace(/(.*)\.(jp?g|png|gif)/ig, '$1_thumb.$2')
+      )
     }
     let Text = ({value}) => <ListItemText primary={value} />
     if (!short) {

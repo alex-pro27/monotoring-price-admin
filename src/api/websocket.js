@@ -1,6 +1,6 @@
 import { SOCKET_SERVER } from '../constants/config'; 
 
-export default class TornadoWebSocket {
+export default class TWebSocket {
 
   constructor(url, options) {
 
@@ -11,7 +11,7 @@ export default class TornadoWebSocket {
         value: SOCKET_SERVER + url
     });
 
-    console.log("SOCKET_SERVER",SOCKET_SERVER)
+    console.log("SOCKET_SERVER", SOCKET_SERVER)
 
     Object.defineProperty(this, 'options', {
       enumerable: false,
@@ -29,7 +29,7 @@ export default class TornadoWebSocket {
 
     this._websocket_events = {
       'onopen': event => {
-        console.info('TornadoWebSocket: New connection', event);
+        console.info('TWebSocket: New connection', event);
       },
       'onmessage': event => {
         try {
@@ -49,21 +49,19 @@ export default class TornadoWebSocket {
           callback(passed_data)
         } catch (e) {
           if (e instanceof SyntaxError) {  // JSON.parse()
-              console.warn('TornadoWebSocket: Can not parse invalid JSON.');
+              console.warn('TWebSocket: Can not parse invalid JSON.');
           } else {
-              console.warn(`TornadoWebSocket: ${e.message}`);
+              console.warn(`TWebSocket: ${e.message}`);
           }
         }
       },
       'onerror': event => {
-          console.error('TornadoWebSocket: Error', event);
+          console.error('TWebSocket: Error', event);
           this.closed = true;
           this.reconnect()
       },
       'onclose': event => {
-          console.info('TornadoWebSocket: Connection closed', event);
-          this.closed = true;
-          this.reconnect();
+          console.info('TWebSocket: Connection closed', event);
       }
     }
 
@@ -102,6 +100,10 @@ export default class TornadoWebSocket {
       this._websocket.onclose = this._websocket_events.onclose;
       this.closed = false;
     }
+  }
+
+  close() {
+    this._websocket.close();
   }
 
   emit(event, data = {}) {

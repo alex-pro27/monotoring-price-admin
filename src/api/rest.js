@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { SERVER_URL, APP_NAME } from '../constants/config';
+import { SERVER_ROOT, APP_NAME } from '../constants/config';
 
 
 let instance = null;
@@ -184,7 +184,6 @@ export default class RestService {
 
   prepareUrlAndHeaders(url, headers={}) {
     if (url.match(/^\/(api|common)/)) {
-      // url = SERVER_URL + url;
       console.log("url", url)
       headers = Object.assign(headers, this.authHeader);
     }
@@ -278,7 +277,7 @@ export default class RestService {
   }
 
   getUrl(api) {
-    return SERVER_URL + "/api/" + api;
+    return SERVER_ROOT + "/api/" + api;
   }
 
   _handlerError(e) {

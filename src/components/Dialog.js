@@ -7,19 +7,14 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-const buttonPropType = PropTypes.shape({
-  title: PropTypes.string, 
-  onPress: PropTypes.func,
-});
-
 class Dialog extends React.Component {
 
   static propTypes = {
     title: PropTypes.string,
     message: PropTypes.string,
     node: PropTypes.node,
-    yes: buttonPropType,
-    no: buttonPropType,
+    yes: PropTypes.string,
+    no: PropTypes.string,
     show: PropTypes.bool,
     onClose: PropTypes.func,
   }
@@ -35,7 +30,7 @@ class Dialog extends React.Component {
     return (
       <DialogMat
         open={show}
-        onClose={() => onClose()}
+        onClose={() => console.log("onClose", onClose) }
       >
         <DialogTitle id="alert-dialog-slide-title">
           { title }
@@ -54,14 +49,14 @@ class Dialog extends React.Component {
         <DialogActions>
           { 
             yes &&
-            <Button onClick={yes.onPress} color="primary">
-              { yes.title }
+            <Button onClick={() => onClose(true)} color="primary">
+              { yes }
             </Button>
           }
           { 
             no &&
-            <Button onClick={no.onPress} color="primary">
-              { no.title }
+            <Button onClick={() => onClose(false)} color="primary">
+              { no }
             </Button>
           }
         </DialogActions>

@@ -81,7 +81,7 @@ const styles = theme => ({
 @withStyles(styles)
 @inject('contentTypesStore', 'appStore')
 @observer
-class Wares extends Component {
+class Monitorings extends Component {
 
   contentTypeID = 0
 
@@ -130,9 +130,18 @@ class Wares extends Component {
 
   onChangeInputFile = ({target}) => {
     const file = target.files[0]
-    this.props.appStore.api.updateWares(file).then(_ => {
-      window.openMessage("Обновление товаров добавленно в задание...", "success");
+    window.showDialog({
+      title: "Выберите действие",
+      message: "Обновить или перезаписать информацию о товарах?",
+      yes: "Обновить",
+      no: "Перезаписать",
+      onClose: (ans) => {
+        this.props.appStore.api.updateWares(file, ans).then(_ => {
+          window.openMessage("Обновление товаров добавленно в задание...", "success");
+        })
+      }
     })
+    
     target.value = null;
   }
 
@@ -177,7 +186,6 @@ class Wares extends Component {
                   key={index}
                   onClick={() => history.push(`${path}/${row.id}`)}
                   className={classnames(classes.tableRow)}>
-                  
                     {
                       extraFields.map(({name, toHTML}, i) => (
                         <TableCell ref={'td'+ i} key={i} className={classes.tableCell}>
@@ -312,7 +320,7 @@ class Wares extends Component {
             />
             <label htmlFor="contained-button-file">
               <Button variant="contained" component="span" className={classes.button}>
-                Обновить товары из файла
+                Обновить мониторинги из файла
               </Button>
             </label>
             <Button 
@@ -348,4 +356,4 @@ class Wares extends Component {
   }
 }
 
-export default Wares; 
+export default Monitorings; 

@@ -112,8 +112,19 @@ class AppWrapperComponent extends React.Component {
     open: drawerState,
     title: '',
   }
+  
+  componentWillMount() {
+    this.setPageTitle(this.props.title)
+  }
 
-  setTitle = (title) => this.setState({ title }) 
+  setPageTitle(title) {
+    document.title = title || "Админка"
+  }
+
+  setTitle = (title) => {
+    this.setPageTitle(title)
+    this.setState({ title })
+  }
 
   handleDrawerOpen = () => {
     drawerState = true
@@ -129,9 +140,13 @@ class AppWrapperComponent extends React.Component {
     window.showDialog({
       title: "Подтвердите действие",
       message: "Действительно хотите выйти?",
-      yes: () => {
-        this.props.history.replace("/login")
-        this.props.appStore.logout()
+      yes: true,
+      no: true,
+      onClose: ans => {
+        if (ans) {
+          this.props.history.replace("/login")
+          this.props.appStore.logout();
+        }
       }
     })
   }

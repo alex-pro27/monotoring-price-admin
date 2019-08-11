@@ -3,6 +3,7 @@ import Permission from './Permission';
 class View {
   
   content_type_id
+  content_type_name
   view_id
   icon
   name
@@ -16,7 +17,8 @@ class View {
   menu
 
   static create({
-    content_type_id, 
+    content_type_id,
+    content_type_name,
     view_id,
     name,
     icon, 
@@ -32,6 +34,7 @@ class View {
     let view = new View();
     [
       view.content_type_id,
+      view.content_type_name,
       view.view_id,
       view.name,
       view.icon,
@@ -43,6 +46,7 @@ class View {
       view.menu
     ] = [
       content_type_id,
+      content_type_name,
       view_id,
       name,
       icon,

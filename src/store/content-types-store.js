@@ -102,6 +102,10 @@ class ContentTypesStore {
     })
   }
 
+  getFilteredList({field_name, value, content_type_id, content_type_name}) {
+    return this.api.getFilteredList({field_name, value, content_type_id, content_type_name})
+  }
+
   sendData(content_type_id, fields) {
     return this.api.sendFieldsContentType(content_type_id, fields)
   }
@@ -112,7 +116,19 @@ class ContentTypesStore {
       .then(
         contentType => {
           let fields = {}
-          for (let { disabled, type, value, name, required, label, content_type, group_by, options } of contentType.fields) {
+          for (let { 
+            disabled,
+            type, 
+            value, 
+            name, 
+            required, 
+            label, 
+            content_type,
+            groups,
+            group_by,
+            group_by_field,
+            options 
+          } of contentType.fields) {
             switch (type) {
               case 'string':
               case 'text':
@@ -161,7 +177,8 @@ class ContentTypesStore {
                   contentType: content_type,
                   type: 'multy_select',
                   groupBy: group_by,
-                  groups: contentType.groups,
+                  groupByField: group_by_field,
+                  groups,
                   convert: items => items.map(({value}) => value),
                 }
                 break;
@@ -172,6 +189,9 @@ class ContentTypesStore {
                   value,
                   name: name + "_id",
                   contentType: content_type,
+                  groupBy: group_by,
+                  groupByField: group_by_field,
+                  groups,
                   type: 'search_select',
                   convert: (value) => value.value,
                 }

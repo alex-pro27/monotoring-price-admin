@@ -2,7 +2,7 @@ import { observable, action, runInAction, computed } from 'mobx';
 import _ from "lodash";
 import { persist } from 'mobx-persist';
 import Api from '../api/api';
-import TornadoWebSocket from '../api/websocket';
+import TWebSocket from '../api/websocket';
 import Admin  from './models/Admin';
 import Permission  from './models/Permission';
 import userStore from './users-store';
@@ -150,17 +150,28 @@ class AppStore {
   }
 
   createSocket() {
-    this.socket = new TornadoWebSocket("/api/admin/ws")
+    this.socket = new TWebSocket("/api/admin/ws")
     this.socket.on("open", () => {
       this.socket.on("on_connect", message => {
         console.log("on connected", message)
       })
       this.socket.on("on_update_products", ({message, error}) => {
-        console.log("on on_update_products", message)
+        console.log("on_update_products", message)
         window.openMessage(message, error ? "error" : "success");
         if (!error) {
           runInAction(() => this.onUpdateProduct++);
         }
+      })
+      this.socket.on("client_joined", ({client_name}) => {
+        console.log("client_joined", client_name)
+        window.openMessage(`Пользователь ${client_name} присоединился`, "success");
+      })
+      this.socket.on("client_leaved", ({client_name}) => {
+        console.log("client_leaved", client_name)
+        window.openMessage(`Пользователь ${client_name} покинул админ панель`, "success");
+      })
+      this.socket.on("on_open", () => {
+        console.log("connected open")
       })
       this.socket.emit("connect", {
         token: this.admin.token
@@ -172,7 +183,6 @@ class AppStore {
      return new Promise(resolve => {
       this.api.login({username, password})
       .then(userData => {
-        console.log(userData)
         runInAction(() => this.admin = Admin.create(userData))
         this.setToken(userData.token)
         this.createSocket();
@@ -232,6 +242,7 @@ class AppStore {
       this.clearAdmin();
       this.avilableViews = new Map();
       userStore.clear();
+      this.socket.close();
       delete this.socket
     })
   }

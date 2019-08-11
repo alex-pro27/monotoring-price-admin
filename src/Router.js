@@ -9,7 +9,7 @@ import EditContentType from './screen/EditContentType';
 // import ContentTypes from './screen/ContentTypes';
 import { observer, inject } from 'mobx-react';
 import { observe } from 'mobx';
-import Wares from './screen/Wares';
+import Monitorings from './screen/Monitorings';
 
 export const RegisterRoutes = [
   {
@@ -20,8 +20,8 @@ export const RegisterRoutes = [
     menu: true
   },
   {
-    path: "/wares",
-    component: Wares,
+    path: "/monitorings",
+    component: Monitorings,
     menu: true,
     children: [
       {

@@ -50,6 +50,7 @@ export default class Forms extends Component {
     style: PropTypes.object,
     buttonDisabled: PropTypes.bool,
     buttonStyle: PropTypes.object,
+    history: PropTypes.object,
   }
 
   dateFields = []
@@ -160,11 +161,28 @@ export default class Forms extends Component {
   _renderFields() {
     const { classes, fields } = this.props;
     return Object.entries(fields).map(
-      ([name, { value, type, label, error, required, itemValue, maxLength, placeHolder, width, disabled, contentType, groups, groupBy, options }], index) => {
+      ([name, { 
+        value, 
+        type, 
+        label, 
+        error, 
+        required, 
+        itemValue, 
+        maxLength, 
+        placeHolder, 
+        width,
+        disabled, 
+        contentType, 
+        groups, 
+        groupBy,
+        groupByField,
+        options 
+      }], index) => {
         if (type == "checkbox") {
           return (
             <div key={name}>
               <Checkbox
+                key={name}
                 id={name}
                 checked={value}
                 disabled={disabled}
@@ -177,6 +195,7 @@ export default class Forms extends Component {
            return (
              <div key={name}>
               <Switch
+                key={name}
                 id={name}
                 checked={value}
                 disabled={disabled}
@@ -235,7 +254,9 @@ export default class Forms extends Component {
               selected={value}
               contentType={contentType}
               groupBy={groupBy}
+              groupByField={groupByField}
               groups={groups}
+              history={this.props.history}
               onChange={this._changeSelect(name)}
             />
           )

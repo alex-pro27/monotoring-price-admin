@@ -83,6 +83,10 @@ class Login extends Component {
     },
   }
 
+  componentWillMount() {
+    document.title = "Авторизация"
+  }
+
   onChange = name => event => {
     let field = Object.assign({}, this.state.fields[name]);
     let value = event.target.value;
