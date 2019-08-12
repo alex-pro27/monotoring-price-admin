@@ -62,6 +62,10 @@ export default class TWebSocket {
       },
       'onclose': event => {
           console.info('TWebSocket: Connection closed', event);
+          if (!this.forceClose) {
+            this.closed = true;
+            this.reconnect()
+          } 
       }
     }
 
@@ -103,6 +107,7 @@ export default class TWebSocket {
   }
 
   close() {
+    this.forceClose = true;
     this._websocket.close();
   }
 
