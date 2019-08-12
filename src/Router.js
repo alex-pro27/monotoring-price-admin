@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { HashRouter, Switch } from 'react-router-dom';
+import { Router, HashRouter, Switch } from 'react-router-dom';
+import { createBrowserHistory } from 'history'
 import { PublicRoute } from 'react-router-with-props';
 
 import Login from './screen/Login';
@@ -10,6 +11,8 @@ import EditContentType from './screen/EditContentType';
 import { observer, inject } from 'mobx-react';
 import { observe } from 'mobx';
 import Monitorings from './screen/Monitorings';
+
+export const history = createBrowserHistory()
 
 export const RegisterRoutes = [
   {
@@ -43,12 +46,14 @@ class AppRouters extends Component {
       routes,
       isAuth,
     }
+    console.log(history)
     this.disposers = [
       observe(this.props.appStore, 'routes', ({ newValue }) => {
         this.setState({routes: newValue})
       }),
       observe(this.props.appStore, 'isAuth', ({ newValue }) => {
-        this.setState({isAuth: newValue})
+        this.setState({isAuth: newValue});
+        !newValue && history.replace("/login")
       }),
     ]
   }
@@ -59,7 +64,7 @@ class AppRouters extends Component {
 
   render() {
     return (
-      <HashRouter>
+      <Router history={history} useHash>
         <div>
           <Switch>
             {
@@ -82,7 +87,7 @@ class AppRouters extends Component {
             <PublicRoute path="*" component={Route404} />
           </Switch>
         </div>
-      </HashRouter>
+      </Router>
     )
   }
 }

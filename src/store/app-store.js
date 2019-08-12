@@ -152,11 +152,11 @@ class AppStore {
   createSocket() {
     this.socket = new TWebSocket("/api/admin/ws")
     this.socket.on("open", () => {
-      this.socket.on("on_connect", message => {
+      this.socket.on("connect", message => {
         console.log("on connected", message)
       })
-      this.socket.on("on_update_products", ({message, error}) => {
-        console.log("on_update_products", message)
+      this.socket.on("update_products", ({message, error}) => {
+        console.log("on update_products", message)
         window.openMessage(message, error ? "error" : "success");
         if (!error) {
           runInAction(() => this.onUpdateProduct++);
@@ -170,8 +170,12 @@ class AppStore {
         console.log("client_leaved", client_name)
         window.openMessage(`Пользователь ${client_name} покинул админ панель`, "success");
       })
-      this.socket.on("on_open", () => {
+      this.socket.on("onopen", () => {
         console.log("connected open")
+      })
+      this.socket.on("logout", () => {
+        this.socket.close()
+        this.logout()
       })
       this.socket.emit("connect", {
         token: this.admin.token
@@ -238,13 +242,19 @@ class AppStore {
   }
 
   logout() {
-    this.api.logout().then(() => {
-      this.clearAdmin();
-      this.avilableViews = new Map();
-      userStore.clear();
-      this.socket.close();
-      delete this.socket
-    })
+    if (this.socket && !this.socket.closed) {
+      console.log("socket logout")
+      this.socket.emit("logout", {
+        token: this.admin.token
+      })
+    } else {
+      console.log("api logout")
+      this.api.logout().then(() => {
+        this.clearAdmin();
+        this.avilableViews = new Map();
+        userStore.clear();
+      })
+    }
   }
 
   @action clearAdmin = () => {

@@ -107,7 +107,7 @@ export default class TWebSocket {
   }
 
   close() {
-    this.forceClose = true;
+    this.forceClose = this.closed = true;
     this._websocket.close();
   }
 

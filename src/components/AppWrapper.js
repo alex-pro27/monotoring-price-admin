@@ -19,6 +19,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
+import { observe } from 'mobx';
 
 const drawerWidth = 240;
 
@@ -144,7 +145,6 @@ class AppWrapperComponent extends React.Component {
       no: true,
       onClose: ans => {
         if (ans) {
-          this.props.history.replace("/login")
           this.props.appStore.logout();
         }
       }
