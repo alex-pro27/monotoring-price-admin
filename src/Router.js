@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Router, HashRouter, Switch } from 'react-router-dom';
-import { createBrowserHistory } from 'history'
+import { Router, Switch } from 'react-router-dom';
+import { createHashHistory } from 'history'
 import { PublicRoute } from 'react-router-with-props';
 
 import Login from './screen/Login';
@@ -12,7 +12,7 @@ import { observer, inject } from 'mobx-react';
 import { observe } from 'mobx';
 import Monitorings from './screen/Monitorings';
 
-export const history = createBrowserHistory()
+export const history = createHashHistory()
 
 export const RegisterRoutes = [
   {
@@ -46,7 +46,6 @@ class AppRouters extends Component {
       routes,
       isAuth,
     }
-    console.log(history)
     this.disposers = [
       observe(this.props.appStore, 'routes', ({ newValue }) => {
         this.setState({routes: newValue})
