@@ -122,8 +122,7 @@ export default class Forms extends Component {
     ) {
       value = fields[name].transform(value)
     }
-
-    if(['input', 'textarea', 'password'].indexOf(fields[name].type) > -1) {
+    if(['string', 'input', 'textarea', 'password'].indexOf(fields[name].type) > -1) {
       fields[name].value = value.toString().trim();
       if (fields[name].required && fields[name].value.length < (fields[name].minLength || 1)) {
         fields[name].error = text.ERROR_EMPTY_FIELD;
@@ -272,7 +271,7 @@ export default class Forms extends Component {
               disabled={disabled}
               label={label}
               required={required}
-              inputProps={{maxLength: maxLength}}
+              inputProps={{ maxLength }}
               type={type}
               multiline={type === 'text'}
               className={classes.textField}

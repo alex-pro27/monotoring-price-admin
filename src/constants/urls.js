@@ -45,7 +45,7 @@ export const UPDATE_WARES = 'admin/update-wares'
 /**
  * Шаблон файла для обновления товаров
  */
-export const GET_PRODUCT_TEMPLATE_FILE = '/api/admin/product-template-file'
+export const GET_PRODUCT_TEMPLATE_FILE = process.env.REACT_APP_SERVER_ROOT + '/api/admin/product-template-file'
 
 /**
  * Websocket админа
