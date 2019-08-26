@@ -1,6 +1,6 @@
 import { create } from 'mobx-persist';
 import appStore from './app-store';
-import usersStore from './users-store';
+import monitoringStore from './monitoring-store';
 import contentTypesStore from './content-types-store'
 
 export const hydrate = create({
@@ -13,7 +13,7 @@ const hydratedStore = {
 }
 
 const store = {
-  usersStore,
+  monitoringStore,
   contentTypesStore,
   ...hydratedStore
 }

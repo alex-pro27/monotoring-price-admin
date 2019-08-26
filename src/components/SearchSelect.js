@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import AsyncSelect from 'react-select/lib/Async';
+import AsyncSelect from 'react-select/async';
 import { observer, inject } from 'mobx-react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
@@ -21,14 +21,15 @@ const styles = theme => ({
     height: 48,
     marginTop: '12px',
     marginBottom: '8px',
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
+    marginLeft: theme.spacing(),
+    marginRight: theme.spacing(),
     maxWidth: 350,
     width: '80%',
   },
   input: {
     display: 'flex',
-    padding: 0,
+    // padding: 0,
+    paddingBottom: 11,
   },
   valueContainer: {
     display: 'flex',
@@ -39,7 +40,7 @@ const styles = theme => ({
     overflow: 'hidden',
   },
   chip: {
-    margin: `${theme.spacing.unit / 2}px ${theme.spacing.unit / 4}px`,
+    margin: `${theme.spacing() / 2}px ${theme.spacing() / 4}px`,
   },
   chipFocused: {
     backgroundColor: emphasize(
@@ -48,7 +49,7 @@ const styles = theme => ({
     ),
   },
   noOptionsMessage: {
-    padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
+    padding: `${theme.spacing()}px ${theme.spacing() / 2}px`,
   },
   singleValue: {
     fontSize: 16,
@@ -61,12 +62,12 @@ const styles = theme => ({
   paper: {
     position: 'absolute',
     zIndex: 1,
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(),
     left: 0,
     right: 0,
   },
   divider: {
-    height: theme.spacing.unit * 2,
+    height: theme.spacing(2),
   },
 });
 
@@ -160,7 +161,12 @@ function MultiValue(props) {
 
 function Menu(props) {
   return (
-    <Paper square onScroll={props.selectProps.onScroll} className={props.selectProps.classes.paper} {...props.innerProps}>
+    <Paper
+      square 
+      onScroll={props.selectProps.onScroll} 
+      className={props.selectProps.classes.paper} 
+      {...props.innerProps}
+    >
       {props.children}
     </Paper>
   )

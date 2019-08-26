@@ -1,5 +1,7 @@
 import { observable } from 'mobx';
 import { persist } from 'mobx-persist';
+import Role from './Role';
+import Monitoring from './Monitoring';
 
 class Admin {
   
@@ -8,25 +10,31 @@ class Admin {
   @persist @observable last_name
   @persist @observable token
   @persist @observable is_super_user
+  @persist("list", Role) roles
+  @persist("list", Monitoring) monitorings
 
   get fullName() {
     return `${this.first_name} ${this.last_name}`
   }
 
-  static create({id, first_name, last_name, token, is_super_user}) {
+  static create({id, first_name, last_name, token, monitorings = [], roles = [], is_super_user}) {
     let admin = new Admin();
     [
       admin.id,
       admin.first_name,
       admin.last_name,
       admin.token,
-      admin.is_super_user
+      admin.roles,
+      admin.is_super_user,
+      admin.monitorings,
     ] = [
       id,
       first_name,
       last_name,
       token,
+      roles.map(x => Role.create(x)),
       is_super_user,
+      monitorings.map(x => Monitoring.create(x)),
     ]
     return admin;
   }

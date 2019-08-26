@@ -15,27 +15,34 @@ class Dialog extends React.Component {
     node: PropTypes.node,
     yes: PropTypes.string,
     no: PropTypes.string,
+    cancel: PropTypes.string,
     show: PropTypes.bool,
+    onAction: PropTypes.func,
     onClose: PropTypes.func,
+    close: PropTypes.func,
+    onOpen: PropTypes.func,
   }
 
   static defaultProps = {
     effect: 'up',
     message: "",
-    title: ""
+    title: "",
+    onClose: () => void 0,
+    onAction: (ans) => ans,
+    onOpen: () => void 0,
   }
 
   render() {
-    const { show, yes, no, title, node, message, onClose } = this.props;
+    const { show, yes, no, cancel, title, node, message, onAction, onClose, close, onOpen } = this.props;
     return (
       <DialogMat
         open={show}
-        onClose={() => console.log("onClose", onClose) }
+        onClose={onClose}
+        onRendered={onOpen}
       >
         <DialogTitle id="alert-dialog-slide-title">
           { title }
         </DialogTitle>
-        
         <DialogContent>
           { 
             !node
@@ -45,22 +52,26 @@ class Dialog extends React.Component {
             : node
           }
         </DialogContent>
-
         <DialogActions>
           { 
             yes &&
-            <Button onClick={() => onClose(true)} color="primary">
+            <Button onClick={() => (onAction(true) || close())} color="primary">
               { yes }
             </Button>
           }
           { 
             no &&
-            <Button onClick={() => onClose(false)} color="primary">
+            <Button onClick={() => (onAction(false) || close())} color="primary">
               { no }
             </Button>
           }
+          {
+            cancel && 
+            <Button onClick={close} color="primary">
+              { cancel }
+            </Button>
+          }
         </DialogActions>
-
       </DialogMat>
     );
   }

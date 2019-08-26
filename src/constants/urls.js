@@ -1,3 +1,5 @@
+import { SERVER_ROOT } from "./config";
+
 /**
  * Авторизация
  */
@@ -19,11 +21,6 @@ export const ALL_USERS = 'admin/users'
  */
 export const GET_AVAILABLE_VIEWS = 'admin/available-views'
 /**
- * Получить доступные таблицы (модели)
- */
-export const GET_CONTENT_TYPES = 'admin/content-types'
-
-/**
  * Получить список из табилцы по ID content_type
  */
 export const ALL_CONTENT_TYPES = 'admin/content-types'
@@ -39,13 +36,18 @@ export const GET_FILTERED_LIST = 'admin/content-types/filter'
 export const ACTION_FIELDS_CONTENT_TYPE = 'admin/content-type/:action'
 
 /**
- * Обновить товары из файла
+ * Обновить мониториг из файла
  */
-export const UPDATE_WARES = 'admin/update-wares'
+export const UPDATE_MONITORINGS = 'admin/update-monitorings'
 /**
  * Шаблон файла для обновления товаров
  */
-export const GET_PRODUCT_TEMPLATE_FILE = process.env.REACT_APP_SERVER_ROOT + '/api/admin/product-template-file'
+export const GET_PRODUCT_TEMPLATE_FILE = SERVER_ROOT + '/api/admin/product-template-file'
+
+/**
+ * Получить список доступных мониторингов
+ */
+export const GET_MONITORING_LIST = 'admin/monitorings'
 
 /**
  * Websocket админа

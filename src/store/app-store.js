@@ -5,7 +5,7 @@ import Api from '../api/api';
 import TWebSocket from '../api/websocket';
 import Admin  from './models/Admin';
 import Permission  from './models/Permission';
-import userStore from './users-store';
+import monitoringStore from './monitoring-store';
 import View from './models/View';
 import { RegisterRoutes } from '../Router'
 import ContentTypes from '../screen/ContentTypes';
@@ -18,6 +18,7 @@ class AppStore {
   @persist('object', Admin) @observable admin;
   @observable avilableViews = new Map()
   @observable onUpdateProduct = 0;
+  _routes = []
 
   @computed get routesInMenu() {
     return this.routes.filter(({ menu }) => menu)
@@ -42,6 +43,7 @@ class AppStore {
           menu: extra.menu || route.menu,
           title: extra.name || extra.plural || route.title,
           permission: extra.permission,
+          contentTypeID: extra.content_type_id,
         })
         let exchidren = [].concat(extra.children || [])
         if (Array.isArray(route.children)) {
@@ -79,6 +81,7 @@ class AppStore {
           }, {
             permission: Permission.create(extraChild.permission),
             children: extraChild.children,
+            content_type_id: extraChild.content_type_id,
           })
         })
       }
@@ -99,6 +102,7 @@ class AppStore {
               title: view.plural || view.name,
               path: path,
               permission: view.permission,
+              contentTypeID: view.content_type_id,
               menu: true,
               icon: view.icon || 'view_carousel',
               component: ContentTypes
@@ -107,6 +111,7 @@ class AppStore {
               title: `Добавить ${view.name}`,
               path: path + '/:id',
               permission: view.permission,
+              contentTypeID: view.content_type_id,
               component: EditContentType
             })
           }
@@ -135,6 +140,7 @@ class AppStore {
             path,
             component,
             icon: view.icon,
+            contentTypeID: view.content_type_id,
             title,
             menu: view.menu,
           }, {
@@ -143,10 +149,11 @@ class AppStore {
           })
         }
       }
-      return routes
+      this._routes = routes
     } else {
-      return RegisterRoutes
+      this._routes = RegisterRoutes
     }
+    return this._routes
   }
 
   createSocket() {
@@ -183,6 +190,10 @@ class AppStore {
     })
   }
 
+  getRoute(pathMatch) {
+    return this._routes.find(({ path }) => path === pathMatch)
+  }
+
   login({username, password}) {
      return new Promise(resolve => {
       this.api.login({username, password})
@@ -194,7 +205,7 @@ class AppStore {
       })
       .then(resolve)
       .catch(this.clearAdmin)
-     })
+    })
   }
 
   getAvailableViews() {
@@ -252,7 +263,7 @@ class AppStore {
       this.api.logout().then(() => {
         this.clearAdmin();
         this.avilableViews = new Map();
-        userStore.clear();
+        monitoringStore.clear();
       })
     }
   }

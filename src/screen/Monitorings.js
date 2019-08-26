@@ -18,12 +18,79 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Lightbox from 'react-image-lightbox';
-
 import AppWrapper from '../components/AppWrapper';
 import SearchInput from '../components/SearchInput';
 import classnames from 'classnames';
 import moment from 'moment';
 import { GET_PRODUCT_TEMPLATE_FILE } from '../constants/urls';
+import { Box, Checkbox } from '@material-ui/core';
+
+class MonitoringsList extends Component {
+
+  state = {
+    monitorings: [],
+    checked: {}
+  }
+
+  setMonitorings = monitorings => this.setState({monitorings})
+
+  onChange = (id) => (event) => {
+    let checked = Object.assign({}, this.state.checked)
+    checked[id] = !checked[id]
+    this.setState({ checked })
+    let changed = Object.entries(checked).filter(([k,v]) => v).map(([k, _]) => k)
+    this.props.onChange(changed)
+  }
+
+  selectAll = (event) => {
+    // event.stopPropagation();
+    let checked = Object.assign({}, this.state.checked)
+    if (this.isSelectAll()) {
+      checked = {}
+    } else {
+      this.state.monitorings.forEach(({id}) => checked[id] = true)
+    }
+    this.setState({checked})
+    this.props.onChange(Object.keys(checked))
+  }
+
+  isSelectAll() {
+    return Object.values(this.state.checked).filter(x => x).length === this.state.monitorings.length;
+  }
+
+  render() {
+    return (
+      <Box>
+        <Spinner listenLoad={["getMonitringsList"]}/>
+        <Button fullWidth onClick={this.selectAll}>
+          <Checkbox
+            onChange={this.selectAll}
+            tabIndex={-1}
+            checked={this.isSelectAll()}
+          />
+          <Typography style={{textAlign: "left", width: "100%"}} >Выбрать все</Typography>
+        </Button>
+
+        <List>
+          {
+            this.state.monitorings.map(({name, id}, i) => (
+              <ListItem button onClick={this.onChange(id)} key={i}>{
+                <Fragment>
+                  <Checkbox
+                    onChange={this.onChange(id)}
+                    tabIndex={-1}
+                    checked={!!this.state.checked[id]}
+                  />
+                  <ListItemText>{name}</ListItemText>
+                </Fragment>
+              }</ListItem>
+            ))
+          }
+        </List>
+      </Box>
+    )
+  }
+}
 
 const styles = theme => ({
   
@@ -88,6 +155,7 @@ class Monitorings extends Component {
   state = {
     isOpen: false,
     showImage: null,
+    showDialog: false,
   }
 
   componentDidMount() {
@@ -106,9 +174,6 @@ class Monitorings extends Component {
           order_by,
         })
       }),
-      observe(this.props.appStore, "onUpdateProduct", () => {
-        this.props.contentTypesStore.getAll({content_type_id: this.contentTypeID})
-      })
     ]
     this.onResize = () => this.forceUpdate()
     window.addEventListener("resize", this.onResize)
@@ -125,24 +190,43 @@ class Monitorings extends Component {
 
   onScrollTable = ({target}) =>  {
     let thead = ReactDOM.findDOMNode(this.refs.thead)
-    thead.style.transform = "translate(0,"+ target.scrollTop + "px)";
+    thead.style.transform = `translate(0,${target.scrollTop}px)`;
   }
 
   onChangeInputFile = ({target}) => {
+
     const file = target.files[0]
+    target.value = null
+
+    const onOpen = (monitoringList) => {
+      if (!monitoringList) return
+      const isAdmin = this.props.appStore.admin.roles.filter(({role_type}) => role_type === 2).length > 0
+      if (isAdmin) {
+        this.props.appStore.api.getMonitringsList().then(monitorings => {
+          monitoringList.setMonitorings(monitorings)
+        })
+      } else {
+        const monitorings = this.props.appStore.admin.monitorings
+        monitoringList.setMonitorings(monitorings)
+      }
+    }
+
     window.showDialog({
-      title: "Выберите действие",
-      message: "Обновить или перезаписать информацию о товарах?",
+      title: "Выберите какие мониториги хотите обновить",
+      node: <MonitoringsList ref={ref => onOpen(ref)} onChange={idx => this.checkedIDX = idx} />,
       yes: "Обновить",
       no: "Перезаписать",
-      onClose: (ans) => {
-        this.props.appStore.api.updateWares(file, ans).then(_ => {
+      cancel: true,
+      onAction: (ans) => {
+        if ((this.checkedIDX || []).length == 0) {
+          window.openMessage("Нечего не выбранно", "warning")
+          return;
+        }
+        this.props.appStore.api.updateMonitorings(file, this.checkedIDX, ans).then(_ => {
           window.openMessage("Обновление товаров добавленно в задание...", "success");
         })
-      }
+      },
     })
-    
-    target.value = null;
   }
 
   renderSortField() {
@@ -288,8 +372,8 @@ class Monitorings extends Component {
     } = this.props
 
     return (
-      <div className={classes.wrapper} style={{height: window.innerHeight - 64}}>
-        <Spinner listenLoad={['allContentTypes', 'updateWares']} />
+      <Box className={classes.wrapper} style={{height: window.innerHeight - 64}}>
+        <Spinner listenLoad={['allContentTypes', 'updateMonitorings']} />
         {
           this.state.isOpen && (
           <Lightbox
@@ -298,16 +382,16 @@ class Monitorings extends Component {
             />
           )
         }
-        <div className={classes.controlBlock}>
+        <Box className={classes.controlBlock}>
           {
             availableSearch &&
-            <div style={{margin: "auto 15px"}}>
+            <Box style={{margin: "auto 15px"}}>
               <SearchInput
                 keyword={keyword}
                 onSearch={(keyword) => this.props.contentTypesStore.getAll({keyword, content_type_id: this.contentTypeID})}
                 placeHolder={`Искать ${name}`} 
               />
-            </div>
+            </Box>
           }
           <Fragment>
             <input
@@ -338,9 +422,9 @@ class Monitorings extends Component {
             color="secondary"
             className={classes.button}
           >
-            { `Новый(ая) ${name}` }
+            { `Новый ${name}` }
           </Button>
-        </div>
+        </Box>
         <PaginateComponent 
           paginate={paginate}
           maxPages={9}
@@ -349,9 +433,9 @@ class Monitorings extends Component {
         {
           short
           ? this.renderShort()
-          : this.renderSortField()          
+          : this.renderSortField()
         }
-      </div>
+      </Box>
     );
   }
 }

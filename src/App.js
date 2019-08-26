@@ -12,6 +12,7 @@ import Spinner from './components/Spinner';
 import moment  from 'moment';
 import 'moment/locale/ru';
 import 'react-image-lightbox/style.css';
+import { Box } from '@material-ui/core';
 
 moment.locale("ru")
 
@@ -31,8 +32,11 @@ class App extends Component {
       message: "",
       node: null,
       onClose: () => void 0,
+      onOpen: () => void 0,
+      onAction: () => void 0,
       yes: "",
-      no: ""
+      no: "",
+      cancel: "",
     }
   }
 
@@ -58,21 +62,26 @@ class App extends Component {
     })
   }
 
-  showDialog = ({title, message, yes, no, onClose = (ans) => void 0, node}) => {
+  showDialog = ({title, message, yes, no, cancel, onClose, onOpen, onAction, node}) => {
     let dialog = Object.assign({}, this.state.dialog);
     dialog.message = message;
     if(yes && no) {
       dialog.yes = typeof yes === "boolean" ? text.OK : yes;
-      dialog.no = typeof no === "boolean" ? text.CANCEL: no;
+      dialog.no = typeof no === "boolean" ? text.NO: no;
     } else if (yes) {
       dialog.yes = typeof yes === "boolean" ? text.OK : yes;
     } else {
-      dialog.yes = typeof yes === "boolean" ? text.CANCEL : yes;
+      dialog.cancel = typeof yes === "boolean" ? text.CANCEL : yes;
+    }
+    if (cancel) {
+      dialog.cancel = typeof cancel === "boolean" ? text.CANCEL : cancel;
     }
     dialog.show = true;
     dialog.node = node;
     dialog.title = title;
-    dialog.onClose = ans => onClose(ans) || this.closeDialog();
+    typeof onAction == 'function' && (dialog.onAction = onAction);
+    typeof onClose == 'function' && (dialog.onClose = onClose);
+    typeof onOpen == 'function' && (dialog.onOpen = onOpen);
     this.setState({ dialog });
   }
 
@@ -85,15 +94,17 @@ class App extends Component {
   }
 
   closeDialog = () => {
-    let dialog = {
+    const dialog = {
       yes: "",
       no: "",
-      onClose: (ans) => void 0,
+      onClose: () => void 0,
+      onOpen: () => void 0,
+      onAction: ans => ans,
       title: "",
       message: "",
       show: false,
       node: null
-    };
+    }
     this.setState({ dialog });
   }
 
@@ -108,13 +119,8 @@ class App extends Component {
   renderDialog() {
     return (
       <Dialog
-        show={this.state.dialog.show}
-        title={this.state.dialog.title}
-        message={this.state.dialog.message}
-        onClose={this.state.dialog.onClose}
-        yes={this.state.dialog.yes}
-        no={this.state.dialog.no}
-        node={this.state.dialog.node}
+        {...this.state.dialog}
+        close={() => this.closeDialog()}
       />
     )
   }
@@ -123,7 +129,7 @@ class App extends Component {
     return (
       <Provider {...store}>
         <MuiThemeProvider>
-          <div>
+          <Box>
             <Snackbar
               anchorOrigin={{
                 vertical: 'top',
@@ -145,7 +151,7 @@ class App extends Component {
               : <Spinner />
             }
             {this.renderDialog()}
-          </div>
+          </Box>
         </MuiThemeProvider>
       </Provider>
     );

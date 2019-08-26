@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import RestService from "../api/rest";
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { Box } from '@material-ui/core';
 
 
 const styles = theme => ({
@@ -18,7 +19,7 @@ const styles = theme => ({
     justifyContent: 'center'
   },
   progress: {
-    margin: theme.spacing.unit * 2,
+    margin: theme.spacing(2),
     position: 'absolute',
     top: 0,
     bottom: 0,
@@ -41,6 +42,7 @@ class Spinner extends Component {
   static defaultProps = {
     backgroundColor: 'rgba(255,255,255,0.6)',
     size: 50,
+    show: false,
   }
 
   static propTypes = {
@@ -48,6 +50,7 @@ class Spinner extends Component {
     size: PropTypes.number,
     backgroundColor: PropTypes.string,
     type: PropTypes.string,
+    show: PropTypes.bool,
   }
 
   get flagLoad() {
@@ -77,12 +80,12 @@ class Spinner extends Component {
   }
 
   render() {
-    if (this.flagLoad){
+    if (this.props.show || this.flagLoad){
       const { classes } = this.props
       return (
-        <div className={classes.container} style={{backgroundColor: this.props.backgroundColor}}>
+        <Box className={classes.container} style={{backgroundColor: this.props.backgroundColor}}>
           <CircularProgress className={classes.progress} color="secondary" />
-        </div>
+        </Box>
       );
     }
     return null

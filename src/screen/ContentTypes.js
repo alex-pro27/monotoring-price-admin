@@ -21,9 +21,9 @@ import Lightbox from 'react-image-lightbox';
 
 import AppWrapper from '../components/AppWrapper';
 import SearchInput from '../components/SearchInput';
-import classnames from 'classnames';
 import moment from 'moment';
 import { SERVER_ROOT } from '../constants/config';
+import { Box } from '@material-ui/core';
 
 const styles = theme => ({
   
@@ -159,8 +159,7 @@ class ContentTypes extends Component {
                 <TableRow
                   key={index}
                   onClick={() => history.push(`${path}/${row.id}`)}
-                  className={classnames(classes.tableRow)}>
-                  
+                  className={classes.tableRow}>
                     {
                       extraFields.map(({name, toHTML}, i) => (
                         <TableCell ref={'td'+ i} key={i} className={classes.tableCell}>
@@ -263,7 +262,7 @@ class ContentTypes extends Component {
     } = this.props
 
     return (
-      <div className={classes.wrapper} style={{height: window.innerHeight - 64}}>
+      <Box className={classes.wrapper} style={{height: window.innerHeight - 64}}>
         <Spinner listenLoad={['allContentTypes',]} />
         {
           this.state.isOpen && (
@@ -273,16 +272,16 @@ class ContentTypes extends Component {
             />
           )
         }
-        <div className={classes.controlBlock}>
+        <Box className={classes.controlBlock}>
           {
             availableSearch &&
-            <div style={{margin: "auto 15px"}}>
+            <Box style={{margin: "auto 15px"}}>
               <SearchInput
                 keyword={keyword}
                 onSearch={(keyword) => this.props.contentTypesStore.getAll({keyword, content_type_id: this.contentTypeID})}
                 placeHolder={`Искать ${name}`} 
               />
-            </div>
+            </Box>
           }
           <Button 
             onClick={() => history.push(`${path}/new`)}
@@ -292,7 +291,7 @@ class ContentTypes extends Component {
           >
             { `Новый(ая) ${name}` }
           </Button>
-        </div>
+        </Box>
         <PaginateComponent 
           paginate={paginate}
           maxPages={9}
@@ -303,7 +302,7 @@ class ContentTypes extends Component {
           ? this.renderShort()
           : this.renderSortField()          
         }
-      </div>
+      </Box>
     );
   }
 }

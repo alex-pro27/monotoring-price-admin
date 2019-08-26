@@ -142,12 +142,8 @@ class AppWrapperComponent extends React.Component {
       title: "Подтвердите действие",
       message: "Действительно хотите выйти?",
       yes: true,
-      no: true,
-      onClose: ans => {
-        if (ans) {
-          this.props.appStore.logout();
-        }
-      }
+      cancel: true,
+      onAction: ans => ans && this.props.appStore.logout()
     })
   }
 
@@ -173,7 +169,7 @@ class AppWrapperComponent extends React.Component {
             >
               <MenuIcon />
             </IconButton>
-            <Typography className={classes.grow} variant="title" color="inherit" noWrap>
+            <Typography className={classes.grow} variant="h6" color="inherit" noWrap>
               { this.state.title || title }
             </Typography>
             <div className={classes.rightblock}>

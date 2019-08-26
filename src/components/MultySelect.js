@@ -10,7 +10,7 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import Collapse from '@material-ui/core/Collapse';
 import Paginate from '../store/models/Paginate';
-import { Typography } from '@material-ui/core';
+import { Typography, Box } from '@material-ui/core';
 import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
@@ -92,13 +92,16 @@ class MultySelect extends Component {
       isLoadedGroupItems: {},
       showImage: null
     }
-    this.getList();
   }
 
   lastGroupOpened = {}
   refsGroups = {
     list: {},
     selected: {}
+  }
+
+  componentDidMount() {
+    this.getList();
   }
 
   getList({page = this.state.page, keyword = this.state.keyword} = {}) {
@@ -427,9 +430,9 @@ class MultySelect extends Component {
     }
 
     return (
-      <div className={classes.listWrapper}>
+      <Box className={classes.listWrapper}>
         <Typography>{title}:</Typography>
-        <div style={{position: 'relative'}}>
+        <Box style={{position: 'relative'}}>
           {this._renderSearchInput(name)}
           {
             name === 'list' && this.state.loading &&
@@ -443,7 +446,7 @@ class MultySelect extends Component {
           >
           {
             Object.entries(_groups).map(([groupID, groupName], index) => (
-              <div key={index} style={{border: this.state.isOpen[name][groupID] ? 'solid 1px red': null}}>
+              <Box key={index} style={{border: this.state.isOpen[name][groupID] ? 'solid 1px red': null}}>
                 <ListItem
                   ref={ref => this.refsGroups[name][groupID] = ref} 
                   button 
@@ -477,25 +480,25 @@ class MultySelect extends Component {
                     }
                   </List>
                 </Collapse>
-              </div>
+              </Box>
             ))
           }
           </List>
-        </div>
-      </div>
+        </Box>
+      </Box>
     )
   }
 
   _renderSearchInput(name) {
     return (
       name === 'list' && this.state.isSearched &&
-      <div>
+      <Box>
         <SearchInput
           placeHolder="Поиск" 
           keyword={this.state.keyword} 
           onSearch={this.onSearch} 
         />
-      </div>
+      </Box>
     )
   }
 
@@ -507,9 +510,9 @@ class MultySelect extends Component {
     const { toHTML } = this.state
     const list = this.state[name]
     return (
-      <div className={classes.listWrapper}>
+      <Box className={classes.listWrapper}>
         <Typography>{title}:</Typography>
-        <div style={{position: 'relative'}}>
+        <Box style={{position: 'relative'}}>
           {this._renderSearchInput(name)}
           {
             name === 'list' && this.state.loading &&
@@ -562,28 +565,28 @@ class MultySelect extends Component {
               ))
             }
           </List>
-        </div>
-      </div>
+        </Box>
+      </Box>
     )
   }
 
   render() {
     const { classes, label } = this.props
     return (
-      <div className={classes.root}>
+      <Box className={classes.root}>
         <Typography variant={'body2'}>{label}:</Typography>
         <Divider />
-        <div>
-          <div className={classes.wrapper}>
+        <Box>
+          <Box className={classes.wrapper}>
             {this._renderSelectList('Выбранно', 'selected')}
             <Button disabled={!this.isChecked()} onClick={this.addTo}>
               <Icon>code</Icon>
             </Button>
             {this._renderSelectList('Доступные', 'list')} 
-          </div>
-        </div>
+          </Box>
+        </Box>
         <Divider />
-      </div>
+      </Box>
     )
   }
 }

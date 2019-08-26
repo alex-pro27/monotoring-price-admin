@@ -7,9 +7,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
 import Switch from '@material-ui/core/Switch';
 import Button from '@material-ui/core/Button';
-
 import text from '../constants/text';
-import { Typography } from '@material-ui/core';
+import { Typography, Box } from '@material-ui/core';
 import MultySelect from './MultySelect';
 import SearchSelect from './SearchSelect';
 import { isObject } from '../helpers/helpres';
@@ -17,8 +16,8 @@ import { isObject } from '../helpers/helpres';
 
 const styles = theme => ({
   textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
+    marginLeft: theme.spacing(),
+    marginRight: theme.spacing(),
     maxWidth: 350
   },
   menu: {
@@ -27,6 +26,11 @@ const styles = theme => ({
   button: {
     width: 300,
     display: 'block'
+  },
+  inlineBlock: {
+    display: 'flex', 
+    flexDirection: 'row', 
+    alignItems: 'center'
   }
 });
 
@@ -39,7 +43,9 @@ export default class Forms extends Component {
     buttonDisabled: false,
     buttonStyle: {},
     style: {},
-    textButton: "Сохранить"
+    textButton: "Сохранить",
+    customButton: false,
+    customButtonOnPress: 0,
   }
 
   static propTypes = {
@@ -51,6 +57,10 @@ export default class Forms extends Component {
     buttonDisabled: PropTypes.bool,
     buttonStyle: PropTypes.object,
     history: PropTypes.object,
+    customButton: PropTypes.bool,
+    customButtonOnPress: PropTypes.number,
+    formIsChanged: (isChanged) => void 0,
+    formIsError: (isError) => void 0,
   }
 
   dateFields = []
@@ -62,39 +72,53 @@ export default class Forms extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.customButtonOnPress && this.props.customButtonOnPress !== nextProps.customButtonOnPress) {
+      this.onPressButton();
+    }
+  }
+ 
   _isChanged() {
+    let isChanged = false;
     for (let [name, { value, required }] of Object.entries(this.props.fields)) {
       if (Array.isArray(value)) {
         if (
           value.length !== this.state.initFields[name].value.length
           || _.differenceBy(value, this.state.initFields[name].value, 'value').length
-          ) {
-          return true
+        ) {
+          isChanged = true
+          break;
         }
-      }else if (isObject(value)) {
+      } else if (isObject(value)) {
         if (value.value !== (this.state.initFields[name].value || {}).value) {
-          return true
+          isChanged = true
+          break
         }
       } else {
         const changed = value != this.state.initFields[name].value
         if ((required && !!value && changed) || (!required && changed)) {
-          return true
+          isChanged = true
+          break
         }
       }
-      
     }
-    return false;
+    this.isChanged !== isChanged && this.props.formIsChanged(isChanged)
+    return isChanged;
   }
 
   _isError() {
+    let isError = false
     for (let { error, hidden } of Object.values(this.props.fields)) {
-      if (error && !hidden) return true;
+      if (error && !hidden) {
+        isError = true
+        break
+      }
     }
-    return false;
+    this.isError !== isError && this.props.formIsError(isError)
+    return isError;
   }
 
-  _changeSelect = name => (value) => {
-    console.log("onChange",name, value)
+  _changeSelect = name => value => {
     let fields = Object.assign({}, this.props.fields)
     fields[name].value = value
     fields[name].onChange && fields[name].onChange(value)
@@ -122,7 +146,7 @@ export default class Forms extends Component {
     ) {
       value = fields[name].transform(value)
     }
-    if(['string', 'input', 'textarea', 'password'].indexOf(fields[name].type) > -1) {
+    if(['text', 'string', 'input', 'textarea', 'password'].indexOf(fields[name].type) > -1) {
       fields[name].value = value.toString().trim();
       if (fields[name].required && fields[name].value.length < (fields[name].minLength || 1)) {
         fields[name].error = text.ERROR_EMPTY_FIELD;
@@ -136,7 +160,6 @@ export default class Forms extends Component {
       : fields[name].value;
       fields[name].error = fields[name].check(args)
     }
-    
     this.props.onChangeFields(fields)
   }
 
@@ -179,7 +202,7 @@ export default class Forms extends Component {
       }], index) => {
         if (type == "checkbox") {
           return (
-            <div key={name}>
+            <Box key={name} className={classes.inlineBlock}>
               <Checkbox
                 key={name}
                 id={name}
@@ -187,12 +210,12 @@ export default class Forms extends Component {
                 disabled={disabled}
                 onChange={this._changeCheckBox(name)}
               />
-              <label htmlFor={name}><Typography inline>{label}</Typography></label>
-            </div>
+              <label htmlFor={name}><Typography inline={'true'}>{label}</Typography></label>
+            </Box>
           )
         } else if (type === 'switch') {
            return (
-             <div key={name}>
+             <Box key={name} className={classes.inlineBlock}>
               <Switch
                 key={name}
                 id={name}
@@ -201,8 +224,8 @@ export default class Forms extends Component {
                 onChange={this._changeCheckBox(name)}
                 value={value}
               />
-              <label htmlFor={name}><Typography inline>{label}</Typography></label>
-            </div>
+              <label htmlFor={name}><Typography inline={'true'}>{label}</Typography></label>
+            </Box>
            )
         } else if (type === 'search_select') {
           return (
@@ -289,22 +312,24 @@ export default class Forms extends Component {
   }
 
   render() {
-    const isError = this._isError();
-    const isChanged = this._isChanged();
-    const { classes, style, buttonStyle, buttonDisabled, textButton } = this.props;
+    this.isError = this._isError();
+    this.isChanged = this._isChanged();
+    const { classes, style, buttonStyle, buttonDisabled, textButton, customButton } = this.props;
     return (
       <form style={{paddingHorizontal: 15, paddingBottom: 20, width: '100%', alignItems: 'center', ...style}}>
         {this._renderFields()}
-        <Button 
-          variant="contained" 
-          color="secondary"
-          className={classes.button}
-          onClick={() => this.onPressButton()}
-          style={{marginTop: 30, ...buttonStyle}}
-          disabled={buttonDisabled || !isChanged || isError}
-        >
-          {textButton}
-        </Button>
+        { !customButton &&
+          <Button 
+            variant="contained" 
+            color="secondary"
+            className={classes.button}
+            onClick={() => this.onPressButton()}
+            style={{marginTop: 30, ...buttonStyle}}
+            disabled={buttonDisabled || !this.isChanged || this.isError}
+          >
+            {textButton}
+          </Button>
+        }
       </form>
     );
   }

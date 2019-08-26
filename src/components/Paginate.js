@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
 import { colors } from '../constants/colors'
+import { Box } from '@material-ui/core';
 
 const styles = theme => ({
   container: {
@@ -55,7 +56,7 @@ class PaginateComponent extends Component {
       }
 
       return (
-        <div className={classes.container}>
+        <Box className={classes.container}>
           <Button 
             variant="outlined" 
             color="primary" 
@@ -95,8 +96,7 @@ class PaginateComponent extends Component {
           >
             <Icon>arrow_forward</Icon>
           </Button>
-
-        </div>
+        </Box>
       )
     } else {
       return null

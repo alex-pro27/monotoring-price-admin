@@ -2,12 +2,12 @@ import {
   LOGIN, 
   LOGOUT, 
   CHECK_AUTH,
-  ALL_USERS,
   GET_AVAILABLE_VIEWS,
   ALL_CONTENT_TYPES,
   ACTION_FIELDS_CONTENT_TYPE,
-  UPDATE_WARES,
-  GET_FILTERED_LIST
+  UPDATE_MONITORINGS,
+  GET_FILTERED_LIST,
+  GET_MONITORING_LIST
 } from '../constants/urls';
 import RestService from './rest';
 
@@ -63,19 +63,6 @@ export default class Api {
         {loadName: 'logout', cacheTimelife: 0}
       ),
       () => this._rest.setToken(null)
-    )
-  }
-
-  /**
-   * Получить всех пользователей
-   * @param {*} page Номер страници
-   */
-  async allUsers(page = null) {
-    return this.request(
-      () => this._rest.get(
-        this._rest.getUrl(ALL_USERS), { page }, {},
-        {loadName: 'allUsers', cacheTimelife: 0}
-      )
     )
   }
 
@@ -155,11 +142,20 @@ export default class Api {
     )
   }
 
-  async updateWares(file, is_update = false) {
+  async updateMonitorings(file, monitoring_idx, is_update = false) {
     return this.request(
       () => this._rest.post(
-        this._rest.getUrl(UPDATE_WARES), 
-        {update_wares: file, is_update}, {}, {loadName: "updateWares", cacheTimelife: 0}
+        this._rest.getUrl(UPDATE_MONITORINGS), 
+        {update_wares: file, monitoring_idx, is_update}, {}, {loadName: "updateMonitorings", cacheTimelife: 0}
+      )
+    )
+  }
+
+  async getMonitringsList() {
+    return this.request(
+      () => this._rest.get(
+        this._rest.getUrl(GET_MONITORING_LIST),
+        {}, {}, {loadName: "getMonitringsList", cacheTimelife: 0}
       )
     )
   }
