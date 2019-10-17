@@ -11,7 +11,8 @@ export function TextField({
   placeHolder = '',
   type = "string",
   check = () => "",
-  transform = value => value.toString().trim()
+  transform,
+  blur = value => value.trim()
 }) {
   return Object.defineProperties({
     required,
@@ -23,7 +24,8 @@ export function TextField({
     type,
     check,
     value,
-    transform
+    transform,
+    blur
   }, {
     placeHolder: {
       get: () => placeHolder

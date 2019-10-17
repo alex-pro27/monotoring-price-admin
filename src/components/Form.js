@@ -147,7 +147,7 @@ export default class Forms extends Component {
       value = fields[name].transform(value)
     }
     if(['text', 'string', 'input', 'textarea', 'password'].indexOf(fields[name].type) > -1) {
-      fields[name].value = value.toString().trim();
+      fields[name].value = value.toString();
       if (fields[name].required && fields[name].value.length < (fields[name].minLength || 1)) {
         fields[name].error = text.ERROR_EMPTY_FIELD;
       }
@@ -161,6 +161,14 @@ export default class Forms extends Component {
       fields[name].error = fields[name].check(args)
     }
     this.props.onChangeFields(fields)
+  }
+
+  _onBlurTextField = (name) => ({target: {value}}) => {
+    if(this.props.fields[name]['blur'] instanceof Function) {
+      let fields = Object.assign({}, this.props.fields);
+      fields[name].value = fields[name].blur(value);
+      this.props.onChangeFields(fields);
+    }
   }
 
   onPressButton() {
@@ -300,6 +308,7 @@ export default class Forms extends Component {
               className={classes.textField}
               value={value || ""}
               onChange={this._checkFields(name)}
+              onBlur={this._onBlurTextField(name)}
               margin="normal"
               InputLabelProps={{
                 shrink: true,

@@ -151,11 +151,11 @@ export default class Api {
     )
   }
 
-  async getMonitringsList() {
+  async getMonitrongsList() {
     return this.request(
       () => this._rest.get(
         this._rest.getUrl(GET_MONITORING_LIST),
-        {}, {}, {loadName: "getMonitringsList", cacheTimelife: 0}
+        {}, {}, {loadName: "getMonitrongsList", cacheTimelife: 0}
       )
     )
   }

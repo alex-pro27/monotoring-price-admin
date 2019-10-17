@@ -20,7 +20,6 @@ import TableRow from '@material-ui/core/TableRow';
 import Lightbox from 'react-image-lightbox';
 import AppWrapper from '../components/AppWrapper';
 import SearchInput from '../components/SearchInput';
-import classnames from 'classnames';
 import moment from 'moment';
 import { GET_PRODUCT_TEMPLATE_FILE } from '../constants/urls';
 import { Box, Checkbox } from '@material-ui/core';
@@ -61,7 +60,7 @@ class MonitoringsList extends Component {
   render() {
     return (
       <Box>
-        <Spinner listenLoad={["getMonitringsList"]}/>
+        <Spinner listenLoad={["getMonitrongsList"]}/>
         <Button fullWidth onClick={this.selectAll}>
           <Checkbox
             onChange={this.selectAll}
@@ -202,7 +201,7 @@ class Monitorings extends Component {
       if (!monitoringList) return
       const isAdmin = this.props.appStore.admin.roles.filter(({role_type}) => role_type === 2).length > 0
       if (isAdmin) {
-        this.props.appStore.api.getMonitringsList().then(monitorings => {
+        this.props.appStore.api.getMonitrongsList().then(monitorings => {
           monitoringList.setMonitorings(monitorings)
         })
       } else {
@@ -269,7 +268,7 @@ class Monitorings extends Component {
                 <TableRow
                   key={index}
                   onClick={() => history.push(`${path}/${row.id}`)}
-                  className={classnames(classes.tableRow)}>
+                  className={classes.tableRow}>
                     {
                       extraFields.map(({name, toHTML}, i) => (
                         <TableCell ref={'td'+ i} key={i} className={classes.tableCell}>

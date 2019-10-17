@@ -116,7 +116,9 @@ export default class TWebSocket {
         data = {'message': data}
     }
     let frame = JSON.stringify({event, data});
-    this._websocket.send(frame);
+    if (!this.closed) {
+      this._websocket.send(frame);
+    }
   }
 
 }

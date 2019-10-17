@@ -118,7 +118,6 @@ class EditContentType extends Component {
             <Icon>keyboard_backspace</Icon>
           </Button>
           <Box>
-            
             <Button 
               disabled={!formIsChanged || formIsError} 
               onClick={this.onPressSaveButton}

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
 import { Provider } from 'mobx-react';
 import store, { loadFromStorage } from './store';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -16,7 +15,6 @@ import { Box } from '@material-ui/core';
 
 moment.locale("ru")
 
-@observer
 class App extends Component {
 
   state = {
