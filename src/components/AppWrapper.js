@@ -173,6 +173,18 @@ class AppWrapperComponent extends React.Component {
               { this.state.title || title }
             </Typography>
             <div className={classes.rightblock}>
+              <IconButton
+                color="inherit"
+                aria-label="Open drawer"
+                onClick={
+                  () => {
+                    this.childComponent.onUpdateSignal 
+                    && this.childComponent.onUpdateSignal()
+                  }
+                }
+              >
+                <Icon>refresh</Icon>
+              </IconButton>
               <Typography style={{color: "white"}} >
                 {admin.fullName}
               </Typography>
@@ -229,11 +241,16 @@ class AppWrapperComponent extends React.Component {
         <main className={classes.content}>
           <div className={classes.toolbar} />
           {
-            React.Children.map(this.props.children, child => (
-              React.cloneElement(child, {
-                setTitle: this.setTitle
-              })
-            ))
+            React.Children.map(this.props.children, child => {
+              const component = React.cloneElement(
+                child, 
+                {
+                  ref: ref => this.childComponent = ref && (ref['wrappedInstance'] || ref),
+                  setTitle: this.setTitle,
+                }
+              )
+              return component;
+            })
           }
         </main>
       </div>

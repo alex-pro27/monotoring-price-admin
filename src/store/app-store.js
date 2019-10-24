@@ -10,6 +10,7 @@ import View from './models/View';
 import { RegisterRoutes } from '../Router'
 import ContentTypes from '../screen/ContentTypes';
 import EditContentType from '../screen/EditContentType';
+import roleTypes from '../constants/roles';
 
 class AppStore {
 
@@ -157,6 +158,7 @@ class AppStore {
   }
 
   createSocket() {
+    if (!this.admin) return;
     this.socket = new TWebSocket("/api/admin/ws")
     this.socket.on("open", () => {
       this.socket.on("connect", message => {
@@ -200,7 +202,10 @@ class AppStore {
       .then(userData => {
         runInAction(() => this.admin = Admin.create(userData))
         this.setToken(userData.token)
-        this.createSocket();
+        if (this.admin.roles && 
+          this.admin.roles.find(x => ~[roleTypes.ADMIN, roleTypes.MANAGER].indexOf(x.role_type))) {
+          this.createSocket();
+        }
         return this.getAvailableViews()
       })
       .then(resolve)
@@ -218,6 +223,7 @@ class AppStore {
         })
         if (this.admin.is_super_user || availableViews.size > 0) {
           runInAction(() => this.avilableViews = availableViews)
+          console.log(availableViews)
           resolve()
         } else {
           this.logout()
@@ -239,9 +245,11 @@ class AppStore {
   checkAuth() {
     return new Promise((resolve, reject) => {
       this.api.checkAuth().then(
-        (userData) => {
+        userData => {
           runInAction(() => this.admin = Admin.create(userData))
-          this.createSocket();
+          if (this.admin.roles && this.admin.roles.find(x => ~[1,2].indexOf(x.role_type))) {
+            this.createSocket();
+          }
           resolve()
         },
         () => {
@@ -254,12 +262,10 @@ class AppStore {
 
   logout() {
     if (this.socket && !this.socket.closed) {
-      console.log("socket logout")
       this.socket.emit("logout", {
         token: this.admin.token
       })
     } else {
-      console.log("api logout")
       this.api.logout().then(() => {
         this.clearAdmin();
         this.avilableViews = new Map();

@@ -45,7 +45,6 @@ const styles = theme => ({
     width: '100%'
   },
   tableWarapper: {
-    width: '100%',
     overflow: 'auto',
     marginTop: 25,
   },
@@ -84,7 +83,12 @@ class ContentTypes extends Component {
     showImage: null,
   }
 
-  componentDidMount() {
+  onUpdateSignal = () => {
+    this.props.contentTypesStore
+    .getAll({content_type_id: this.contentTypeID})
+  }
+
+  componentWillMount() {
     this.contentTypeID = this.props.appStore.avilableViews.get(this.props.match.path).content_type_id
     this.props.contentTypesStore
     .getAll({content_type_id: this.contentTypeID})
@@ -127,7 +131,12 @@ class ContentTypes extends Component {
       match: { path },
     } = this.props
     return (
-      <Paper onScroll={this.onScrollTable} elevation={0} className={classes.tableWarapper}>
+      <Paper 
+        onScroll={this.onScrollTable} 
+        elevation={0} 
+        className={classes.tableWarapper}
+        style={{width: window.innerWidth - 73}}
+      >
         <Table>
           <TableHead ref={"thead"} className={classes.tableHead}>
             <TableRow>
@@ -199,7 +208,7 @@ class ContentTypes extends Component {
       value =  value ? "Да": "Нет"
     } else if (toHTML === "image") {
       value = value && value.split(",").map(
-        path => SERVER_ROOT + path.replace(/(.*)\.(jp?g|png|gif)/ig, '$1_thumb.$2')
+        path => SERVER_ROOT + path.replace(/(.*)\.(jpe?g|png|gif)/ig, '$1_thumb.$2')
       )
     }
     let Text = ({value}) => <ListItemText primary={value} />

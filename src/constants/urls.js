@@ -50,6 +50,11 @@ export const GET_PRODUCT_TEMPLATE_FILE = SERVER_ROOT + '/api/admin/product-templ
 export const GET_MONITORING_LIST = 'admin/monitorings'
 
 /**
+ * Получить список промониторенных товаров
+ */
+export const GET_COMPLETE_WARES = 'admin/complete-wares'
+
+/**
  * Websocket админа
  */
 export const WS_ADMIN = '/admin'

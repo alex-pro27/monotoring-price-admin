@@ -2,6 +2,7 @@ import { create } from 'mobx-persist';
 import appStore from './app-store';
 import monitoringStore from './monitoring-store';
 import contentTypesStore from './content-types-store'
+import completeWaresStore from './complete-wares-store';
 
 export const hydrate = create({
   storage: localStorage,
@@ -15,6 +16,7 @@ const hydratedStore = {
 const store = {
   monitoringStore,
   contentTypesStore,
+  completeWaresStore,
   ...hydratedStore
 }
 

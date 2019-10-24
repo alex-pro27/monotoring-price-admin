@@ -7,7 +7,8 @@ import {
   ACTION_FIELDS_CONTENT_TYPE,
   UPDATE_MONITORINGS,
   GET_FILTERED_LIST,
-  GET_MONITORING_LIST
+  GET_MONITORING_LIST,
+  GET_COMPLETE_WARES
 } from '../constants/urls';
 import RestService from './rest';
 
@@ -84,12 +85,12 @@ export default class Api {
    * @param {*} content_type_id - content-type
    * @param {*} page - номер страницы
    */
-  async allContentTypes({page, content_type_id, content_type_name, keyword, short, order_by, group_by}) {
+  async allContentTypes({page, content_type_id, content_type_name, keyword, short, order_by, group_by, page_size=100}) {
     console.log("allcontentType", content_type_name, short)
     return this.request(
       () => this._rest.get(
         this._rest.getUrl(ALL_CONTENT_TYPES),
-        {page, content_type_id, content_type_name, keyword, short, order_by, group_by}, {},
+        {page, content_type_id, content_type_name, keyword, short, order_by, group_by, page_size}, {},
         {loadName: 'allContentTypes', cacheTimelife: 0}
       )
     )
@@ -121,6 +122,30 @@ export default class Api {
         this._rest.getUrl(ACTION_FIELDS_CONTENT_TYPE.replace(':action', id)),
         {content_type_id}, {},
         {loadName: 'getFieldsContentType', cacheTimelife: 0}
+      )
+    )
+  }
+
+  async getCompleteWares(
+    {datefrom, dateto, page, order_by, 
+      regions, work_groups, monitoring_shops, 
+      monitoring_types, keywords
+    }) {
+    return this.request(
+      () => this._rest.get(
+        this._rest.getUrl(GET_COMPLETE_WARES),
+        { 
+          datefrom,
+          dateto,
+          page,
+          order_by,
+          keywords,
+          regions: regions.join(','),
+          work_groups: work_groups.join(','),
+          monitoring_shops: monitoring_shops.join(','),
+          monitoring_types: monitoring_types.join(','),
+        }, {},
+        { loadName: 'getCompleteWares', cacheTimelife: 0 }
       )
     )
   }

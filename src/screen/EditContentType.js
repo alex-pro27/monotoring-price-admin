@@ -7,7 +7,7 @@ import Spinner from '../components/Spinner';
 import Form from '../components/Form';
 import { Box, Button, Icon } from '@material-ui/core';
 import { observe } from 'mobx';
-
+import permissions from '../constants/permissions'
 
 const styles = theme => ({
   wrapper: {
@@ -25,7 +25,22 @@ const styles = theme => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
-  }
+  },
+  paper: {
+    padding: theme.spacing(2),
+    margin: 'auto',
+    maxWidth: 500,
+  },
+  image: {
+    width: 128,
+    height: 128,
+  },
+  img: {
+    margin: 'auto',
+    display: 'block',
+    maxWidth: '100%',
+    maxHeight: '100%',
+  },
 })
 
 @AppWrapper
@@ -43,6 +58,10 @@ class EditContentType extends Component {
     customButtonOnPress: 0,
   }
 
+  onUpdateSignal() {
+    this.selectContentType()
+  }
+
   selectContentType = () => {
     this.props.contentTypesStore.select({content_type_id: this.route.contentTypeID, id: this.viewId}).then(
       ({title, fields}) => {
@@ -52,9 +71,10 @@ class EditContentType extends Component {
     )
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.viewId = parseInt(this.props.match.params.id) || 0
     this.route = this.props.appStore.getRoute(this.props.match.path)
+    this.isWriteAccess = [permissions.ACCESS, permissions.WRITE].indexOf(this.route.permission.access) > -1
     if (this.route) {
       this.setState({ contentTypeID: this.route.contentTypeID })
       this.selectContentType()
@@ -88,6 +108,12 @@ class EditContentType extends Component {
     })
   }
 
+  goBack = () => {
+    const { history } = this.props;
+    const path = history.location.pathname.split('/')[1]
+    history.replace('/' + path)
+  }
+
   onScroll = ({currentTarget}) => {
     const buttonControl = ReactDOM.findDOMNode(this.refs.buttonControl)
     buttonControl.style.transform = "translate(0,"+ currentTarget.scrollTop + "px)";
@@ -98,7 +124,7 @@ class EditContentType extends Component {
   }
 
   _renderDelButton() {
-    if (this.viewId && this.route && this.route.permission && this.route.permission.access === 7) {
+    if (this.viewId && this.route && this.route.permission && this.route.permission.access === permissions.ACCESS) {
       return (
         <Button variant="contained" color="secondary" style={{marginLeft: 15}}>
           <Icon>delete</Icon>
@@ -114,21 +140,19 @@ class EditContentType extends Component {
       <Box className={classes.wrapper} onScroll={this.onScroll} style={{height: window.innerHeight - 64}}>
         <Spinner listenLoad={['getFieldsContentType', 'sendFieldsContentType',]} />
         <Box className={classes.buttonControl} ref={"buttonControl"}>
-          <Button onClick={this.props.history.goBack} variant="outlined" color="secondary">
+          <Button onClick={this.goBack} variant="outlined" color="secondary">
             <Icon>keyboard_backspace</Icon>
           </Button>
           <Box>
-            <Button 
-              disabled={!formIsChanged || formIsError} 
+            <Button
+              disabled={!formIsChanged || formIsError || !this.isWriteAccess} 
               onClick={this.onPressSaveButton}
-              variant="contained" 
+              variant="contained"
               color="secondary"
             >
               Сохранить
             </Button>
-
             {this._renderDelButton()}
-
           </Box>
         </Box>
        {

@@ -117,7 +117,11 @@ export default class TWebSocket {
     }
     let frame = JSON.stringify({event, data});
     if (!this.closed) {
-      this._websocket.send(frame);
+      try {
+        this._websocket.send(frame);
+      } catch(e) {
+        console.warn("Twebsocket: Error emit", e)
+      }
     }
   }
 

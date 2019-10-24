@@ -33,7 +33,7 @@ class MonitoringsList extends Component {
 
   setMonitorings = monitorings => this.setState({monitorings})
 
-  onChange = (id) => (event) => {
+  onChange = id => event => {
     let checked = Object.assign({}, this.state.checked)
     checked[id] = !checked[id]
     this.setState({ checked })
@@ -41,7 +41,7 @@ class MonitoringsList extends Component {
     this.props.onChange(changed)
   }
 
-  selectAll = (event) => {
+  selectAll = event => {
     // event.stopPropagation();
     let checked = Object.assign({}, this.state.checked)
     if (this.isSelectAll()) {
@@ -157,7 +157,12 @@ class Monitorings extends Component {
     showDialog: false,
   }
 
-  componentDidMount() {
+  onUpdateSignal = () => {
+    this.props.contentTypesStore
+    .getAll({content_type_id: this.contentTypeID})
+  }
+
+  componentWillMount() {
     this.contentTypeID = this.props.appStore.avilableViews.get(this.props.match.path).content_type_id
     this.props.contentTypesStore
     .getAll({content_type_id: this.contentTypeID})
@@ -192,7 +197,7 @@ class Monitorings extends Component {
     thead.style.transform = `translate(0,${target.scrollTop}px)`;
   }
 
-  onChangeInputFile = ({target}) => {
+  onChangeInputFile = ({ target }) => {
 
     const file = target.files[0]
     target.value = null
@@ -283,7 +288,7 @@ class Monitorings extends Component {
                         </TableCell>
                       ))
                     }
-                </TableRow>
+                  </TableRow>
                 ))
               }
             </TableBody>

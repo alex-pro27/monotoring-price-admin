@@ -11,6 +11,8 @@ import EditContentType from './screen/EditContentType';
 import { observer, inject } from 'mobx-react';
 import { observe } from 'mobx';
 import Monitorings from './screen/Monitorings';
+import CompleteWares from './screen/CompleteWares';
+import CompleteWare from './screen/CompleteWare';
 
 export const history = createHashHistory()
 
@@ -30,6 +32,17 @@ export const RegisterRoutes = [
       {
         path: "/:id",
         component: EditContentType,
+      },
+    ]
+  },
+  {
+    path: "/complete-wares",
+    component: CompleteWares,
+    menu: true,
+    children: [
+      {
+        path: "/:id",
+        component: CompleteWare,
       },
     ]
   },
