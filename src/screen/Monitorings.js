@@ -162,7 +162,7 @@ class Monitorings extends Component {
     .getAll({content_type_id: this.contentTypeID})
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.contentTypeID = this.props.appStore.avilableViews.get(this.props.match.path).content_type_id
     this.props.contentTypesStore
     .getAll({content_type_id: this.contentTypeID})
@@ -241,7 +241,12 @@ class Monitorings extends Component {
       match: { path },
     } = this.props
     return (
-      <Paper onScroll={this.onScrollTable} elevation={0} className={classes.tableWarapper}>
+      <Paper 
+        onScroll={this.onScrollTable} 
+        elevation={0} 
+        className={classes.tableWarapper}
+        ref="table"
+      >
         <Table>
           <TableHead ref={"thead"} className={classes.tableHead}>
             <TableRow>
@@ -417,7 +422,7 @@ class Monitorings extends Component {
               variant="contained"
               className={classes.button}
             >
-                Шаблон файла
+              Шаблон файла
             </Button>
           </Fragment>
           <Button 
@@ -432,7 +437,16 @@ class Monitorings extends Component {
         <PaginateComponent 
           paginate={paginate}
           maxPages={9}
-          getContent={page => this.props.contentTypesStore.getAll({page, content_type_id: this.contentTypeID,})}
+          getContent={page => (
+            this.props.contentTypesStore
+            .getAll({page, content_type_id: this.contentTypeID})
+            .then(() => {
+              if (this.refs["table"]) {
+                const table = ReactDOM.findDOMNode(this.refs["table"])
+                table && table.scrollTo(0, 0)
+              }
+            })
+          )}
         />
         {
           short

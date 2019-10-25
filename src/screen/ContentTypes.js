@@ -33,7 +33,6 @@ const styles = theme => ({
     alignItems: 'center',
     overflow: 'hidden'
   },
-
   list: {
     width: '100%',
     overflow: 'auto',
@@ -88,7 +87,7 @@ class ContentTypes extends Component {
     .getAll({content_type_id: this.contentTypeID})
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.contentTypeID = this.props.appStore.avilableViews.get(this.props.match.path).content_type_id
     this.props.contentTypesStore
     .getAll({content_type_id: this.contentTypeID})
@@ -127,7 +126,12 @@ class ContentTypes extends Component {
     const {
       classes,
       history,
-      contentTypesStore: { all, sortFields, extraFields, activeSort },
+      contentTypesStore: {
+        all, 
+        sortFields, 
+        extraFields, 
+        activeSort 
+      },
       match: { path },
     } = this.props
     return (
@@ -136,6 +140,7 @@ class ContentTypes extends Component {
         elevation={0} 
         className={classes.tableWarapper}
         style={{width: window.innerWidth - 73}}
+        ref="table"
       >
         <Table>
           <TableHead ref={"thead"} className={classes.tableHead}>
@@ -304,7 +309,17 @@ class ContentTypes extends Component {
         <PaginateComponent 
           paginate={paginate}
           maxPages={9}
-          getContent={page => this.props.contentTypesStore.getAll({page, content_type_id: this.contentTypeID,})}
+          getContent={page => (
+            this.props
+            .contentTypesStore
+            .getAll({page, content_type_id: this.contentTypeID})
+            .then(() => {
+              if (this.refs["table"]) {
+                const table = ReactDOM.findDOMNode(this.refs["table"])
+                table && table.scrollTo(0, 0)
+              }
+            })
+          )}
         />
         {
           short

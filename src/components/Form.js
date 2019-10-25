@@ -268,7 +268,7 @@ export default class Forms extends Component {
               {
                 options.map(({label, value}, i) => (
                   <MenuItem key={i} value={value}>
-                    <Typography>{label}</Typography>
+                    <Typography variant={'body2'}>{label}</Typography>
                   </MenuItem>
                 ))
               }

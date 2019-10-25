@@ -215,6 +215,7 @@ class CompleteWares extends Component {
   }
 
   header = {
+    photos: ["Фотографии", false],
     code: ["Код товара", true],
     ware: ["Товар", true],
     segment_code: ["Код сегмента", true],
@@ -223,13 +224,11 @@ class CompleteWares extends Component {
     work_group: ["Рабочая группа", true],
     user_name: ["Пользователь", true],
     date_upload: ["Дата выгрузки", true],
-    discount: ["Скидка", false],
+    missing: ["Отсутвует", true],
     price: ["Цена", true],
-    max_price: ["Макс. цена", true],
-    monitoring_type: ["Тип мониторига", false],
+    monitoring_type: ["Тип мониторига", true],
     rival_code: ["Код конкурента", true],
     rival: ["Конкурент", true],
-    photos: ["Фотографии", false]
   }
 
   onUpdateSignal = () => {
@@ -239,6 +238,7 @@ class CompleteWares extends Component {
   handlerValues = (name, value) => {
     const handlers = {
       date_upload: date => moment(date).format("LLL"),
+      missing: value => value ? "Да" : "Нет",
       photos: photos => (
         photos && photos.length && photos.map(
           (path, i) => (
@@ -256,7 +256,7 @@ class CompleteWares extends Component {
     return (handlers[name] && handlers[name](value)) || value;
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.props.completeWaresStore.getCompleteWares()
     this.disposers = [
       observe(this.props.completeWaresStore, 'activeSort', ({ newValue }) => {
@@ -377,7 +377,14 @@ class CompleteWares extends Component {
           paginate={paginate}
           maxPages={9}
           getContent={page => {
-            this.props.completeWaresStore.getCompleteWares(page)
+            this.props.completeWaresStore
+            .getCompleteWares(page)
+            .then(() => {
+              if (this.refs["table"]) {
+                const table = ReactDOM.findDOMNode(this.refs["table"])
+                table && table.scrollTo(0, 0)
+              }
+            })
           }}
         />
         
@@ -386,6 +393,7 @@ class CompleteWares extends Component {
           elevation={0} 
           className={classes.tableWarapper}
           style={{width: window.innerWidth - 73}}
+          ref="table"
         >
           <Table>
             <TableHead ref={"thead"} className={classes.tableHead}>
