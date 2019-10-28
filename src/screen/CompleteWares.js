@@ -268,13 +268,10 @@ class CompleteWares extends Component {
         this.props.completeWaresStore.getCompleteWares()
       }),
     ]
-    this.onResize = () => this.forceUpdate()
-    window.addEventListener("resize", this.onResize)
   }
 
   componentWillUnmount() {
     this.disposers.forEach(d => d())
-    window.removeEventListener("resize", this.onResize)
   }
 
   sortHandler = name => event => {
@@ -347,9 +344,8 @@ class CompleteWares extends Component {
         isCheckedFilter
       }
     } = this.props
-
     return (
-      <Box className={classes.wrapper} style={{height: window.innerHeight - 64}}>
+      <Box className={classes.wrapper} style={{height: this.props.wrappedComponentSize.height}}>
         <Spinner listenLoad={['getCompleteWares',]} />
         {
           this.state.isOpen && (
@@ -392,7 +388,7 @@ class CompleteWares extends Component {
           onScroll={this.onScrollTable} 
           elevation={0} 
           className={classes.tableWarapper}
-          style={{width: window.innerWidth - 73}}
+          style={{width: this.props.wrappedComponentSize.width}}
           ref="table"
         >
           <Table>

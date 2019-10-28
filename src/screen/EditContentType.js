@@ -108,6 +108,12 @@ class EditContentType extends Component {
     })
   }
 
+  delete = () => {
+    this.props
+    .contentTypesStore
+    .deleteItem(this.route.contentTypeID, this.viewId)
+  }
+
   goBack = () => {
     const { history } = this.props;
     const path = history.location.pathname.split('/')[1]
@@ -126,7 +132,7 @@ class EditContentType extends Component {
   _renderDelButton() {
     if (this.viewId && this.route && this.route.permission && this.route.permission.access === permissions.ACCESS) {
       return (
-        <Button variant="contained" color="secondary" style={{marginLeft: 15}}>
+        <Button onClick={this.delete} variant="contained" color="secondary" style={{marginLeft: 15}}>
           <Icon>delete</Icon>
         </Button>
       )

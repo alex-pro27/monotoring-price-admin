@@ -25,7 +25,8 @@ class ContentTypesStore {
   toHTML
 
   @action activateSort(name) {
-    let activeSort = Object.assign({}, this.activeSort)
+    console.log("action activateSort", name)
+    let activeSort = this.activeSort
     if (!activeSort[name]) {
       activeSort[name] = 'desc'
     } else if (activeSort[name] === 'asc') {
@@ -108,6 +109,10 @@ class ContentTypesStore {
 
   sendData(content_type_id, fields) {
     return this.api.sendFieldsContentType(content_type_id, fields)
+  }
+
+  deleteItem(content_type_id, id) {
+    return this.api.sendFieldsContentType(content_type_id, { id }, true)
   }
 
   select({id, content_type_id}) {

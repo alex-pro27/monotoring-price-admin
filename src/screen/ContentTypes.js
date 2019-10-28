@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom'
 import { observer, inject } from 'mobx-react';
-import { observe } from 'mobx';
+import { observe, toJS } from 'mobx';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -104,13 +104,10 @@ class ContentTypes extends Component {
         })
       }),
     ]
-    this.onResize = () => this.forceUpdate()
-    window.addEventListener("resize", this.onResize)
   }
 
   componentWillUnmount() {
     this.disposers.forEach(d => d())
-    window.removeEventListener("resize", this.onResize)
   }
 
   sortHandler = name => event => {
@@ -139,7 +136,7 @@ class ContentTypes extends Component {
         onScroll={this.onScrollTable} 
         elevation={0} 
         className={classes.tableWarapper}
-        style={{width: window.innerWidth - 73}}
+        style={{width: this.props.wrappedComponentSize.width}}
         ref="table"
       >
         <Table>
@@ -276,7 +273,7 @@ class ContentTypes extends Component {
     } = this.props
 
     return (
-      <Box className={classes.wrapper} style={{height: window.innerHeight - 64}}>
+      <Box className={classes.wrapper} style={{height: this.props.wrappedComponentSize.height}}>
         <Spinner listenLoad={['allContentTypes',]} />
         {
           this.state.isOpen && (

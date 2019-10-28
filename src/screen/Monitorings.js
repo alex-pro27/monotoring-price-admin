@@ -245,6 +245,7 @@ class Monitorings extends Component {
         onScroll={this.onScrollTable} 
         elevation={0} 
         className={classes.tableWarapper}
+        style={{width: this.props.wrappedComponentSize.width}}
         ref="table"
       >
         <Table>
@@ -381,7 +382,7 @@ class Monitorings extends Component {
     } = this.props
 
     return (
-      <Box className={classes.wrapper} style={{height: window.innerHeight - 64}}>
+      <Box className={classes.wrapper} style={{height: this.props.wrappedComponentSize.height}}>
         <Spinner listenLoad={['allContentTypes', 'updateMonitorings']} />
         {
           this.state.isOpen && (

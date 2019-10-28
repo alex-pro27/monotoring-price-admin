@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
@@ -19,7 +20,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
-import { observe } from 'mobx';
 
 const drawerWidth = 240;
 
@@ -116,6 +116,12 @@ class AppWrapperComponent extends React.Component {
   
   componentWillMount() {
     this.setPageTitle(this.props.title)
+    this.onResize = () => this.forceUpdate()
+    window.addEventListener("resize", this.onResize)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.onResize)
   }
 
   setPageTitle(title) {
@@ -127,15 +133,23 @@ class AppWrapperComponent extends React.Component {
     this.setState({ title })
   }
 
-  handleDrawerOpen = () => {
-    drawerState = true
-    this.setState({ open: drawerState })
-  };
+  getWrappedComponentSize = () => {
+    // const drawer = ReactDOM.findDOMNode(this.refs["drawer"])
+    // const appBar = ReactDOM.findDOMNode(this.refs["appBar"])
+    // const drawerWidth = drawer ? drawer.offsetWidth : 73
+    // const appBarHeight = appBar ? appBar.offsetHeight : 64
+    return {
+      width: window.innerWidth - (this.state.open ? 240 : 73),
+      height: window.innerHeight - 64
+    }
+  }
 
-  handleDrawerClose = () => {
-    drawerState = false
-    this.setState({ open: drawerState })
-  };
+  handleDrawer = () => {
+    this.setState(
+      { open: (drawerState = !this.state.open) },
+      () => window.dispatchEvent(new Event("resize"))
+    )
+  }
 
   showConfirmExit() {
     window.showDialog({
@@ -153,6 +167,7 @@ class AppWrapperComponent extends React.Component {
       <div className={classes.root}>
         <CssBaseline />
         <AppBar
+          ref={"appBar"}
           position="fixed"
           className={classNames(classes.appBar, {
             [classes.appBarShift]: this.state.open,
@@ -162,7 +177,7 @@ class AppWrapperComponent extends React.Component {
             <IconButton
               color="inherit"
               aria-label="Open drawer"
-              onClick={this.handleDrawerOpen}
+              onClick={this.handleDrawer}
               className={classNames(classes.menuButton, {
                 [classes.hide]: this.state.open,
               })}
@@ -197,6 +212,7 @@ class AppWrapperComponent extends React.Component {
           </Toolbar>
         </AppBar>
         <Drawer
+          ref={"drawer"}
           variant="permanent"
           className={classNames(classes.drawer, {
             [classes.drawerOpen]: this.state.open,
@@ -211,7 +227,7 @@ class AppWrapperComponent extends React.Component {
           open={this.state.open}
         >
           <div className={classes.toolbar}>
-            <IconButton onClick={this.handleDrawerClose}>
+            <IconButton onClick={this.handleDrawer}>
               {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           </div>
@@ -241,16 +257,16 @@ class AppWrapperComponent extends React.Component {
         <main className={classes.content}>
           <div className={classes.toolbar} />
           {
-            React.Children.map(this.props.children, child => {
-              const component = React.cloneElement(
+            React.Children.map(this.props.children, child => (
+              React.cloneElement(
                 child, 
                 {
                   ref: ref => this.childComponent = ref && (ref['wrappedInstance'] || ref),
                   setTitle: this.setTitle,
+                  wrappedComponentSize: this.getWrappedComponentSize(),
                 }
               )
-              return component;
-            })
+            ))
           }
         </main>
       </div>
