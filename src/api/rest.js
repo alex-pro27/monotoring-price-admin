@@ -195,6 +195,7 @@ export default class RestService {
     for(let [k, v] of Object.entries(data)) {
       fd.append(k.toString(), v);
     };
+    console.log(fd)
     return fd;
   }
 

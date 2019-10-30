@@ -56,6 +56,7 @@ class EditContentType extends Component {
     formIsError: false,
     formIsChanged: true,
     customButtonOnPress: 0,
+    title: null,
   }
 
   onUpdateSignal() {
@@ -66,7 +67,7 @@ class EditContentType extends Component {
     this.props.contentTypesStore.select({content_type_id: this.route.contentTypeID, id: this.viewId}).then(
       ({title, fields}) => {
         title && this.props.setTitle(`Редактировать ${title}`)
-        this.setState({fields, init: true})
+        this.setState({fields, init: true, title})
       }
     )
   }
@@ -79,15 +80,12 @@ class EditContentType extends Component {
       this.setState({ contentTypeID: this.route.contentTypeID })
       this.selectContentType()
     }
-    this.onResize = () => this.forceUpdate()
-    window.addEventListener("resize", this.onResize)
     this.disposers = [
       observe(this.props.appStore, "onUpdateProduct", this.selectContentType)
     ]
   }
 
   componentWillUnmount() {
-    window.removeEventListener("resize", this.onResize)
     this.disposers.forEach(d => d())
   }
 
@@ -109,9 +107,21 @@ class EditContentType extends Component {
   }
 
   delete = () => {
-    this.props
-    .contentTypesStore
-    .deleteItem(this.route.contentTypeID, this.viewId)
+    window.showDialog({
+      title: "Подтвердите действие",
+      message: `Удалить ${this.state.title}?`,
+      yes: true,
+      cancel: true,
+      onAction: ans => (
+        ans && this.props
+        .contentTypesStore
+        .deleteItem(this.route.contentTypeID, this.viewId)
+        .then(() => {
+          window.openMessage(`${this.state.title} успешно удален`, "success")
+          this.goBack()
+        })
+      )
+    })
   }
 
   goBack = () => {

@@ -32,8 +32,13 @@ class Dialog extends React.Component {
     onOpen: () => void 0,
   }
 
+  action = ans => () => {
+    this.props.onAction(ans)
+    this.props.close()
+  }
+
   render() {
-    const { show, yes, no, cancel, title, node, message, onAction, onClose, close, onOpen } = this.props;
+    const { show, yes, no, cancel, title, node, message, onClose, close, onOpen } = this.props;
     return (
       <DialogMat
         open={show}
@@ -55,13 +60,13 @@ class Dialog extends React.Component {
         <DialogActions>
           { 
             yes &&
-            <Button onClick={() => (onAction(true) || close())} color="primary">
+            <Button onClick={this.action(true)} color="primary">
               { yes }
             </Button>
           }
           { 
             no &&
-            <Button onClick={() => (onAction(false) || close())} color="primary">
+            <Button onClick={this.action(false)} color="primary">
               { no }
             </Button>
           }

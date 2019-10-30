@@ -55,6 +55,21 @@ export const GET_MONITORING_LIST = 'admin/monitorings'
 export const GET_COMPLETE_WARES = 'admin/complete-wares'
 
 /**
+ * Получить xls отчет на email
+ */
+export const GET_REPORT = 'admin/get-report'
+
+/**
+ * Получить удаленные данные
+ */
+export const GET_TRASH_DATA = 'admin/trash-data'
+
+/**
+ * Восстановить удаленную сущность
+ */
+export const RECOVERY_FROM_TRASH = 'admin/recovery-from-trash'
+
+/**
  * Websocket админа
  */
 export const WS_ADMIN = '/admin'

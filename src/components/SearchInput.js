@@ -29,12 +29,14 @@ class SearchInput extends Component {
     onChange: PropTypes.func,
     onSearch: PropTypes.func,
     placeHolder: PropTypes.string,
-    keyword: PropTypes.string
+    keyword: PropTypes.string,
+    style: PropTypes.object
   }
 
   static defaultProps = {
     onChange: () => void 0,
-    onSearch: () => void 0
+    onSearch: () => void 0,
+    style: {},
   }
 
   constructor(props) {
@@ -52,7 +54,7 @@ class SearchInput extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Paper className={classes.root} elevation={0}>
+      <Paper className={classes.root} style={this.props.style} elevation={0}>
         <InputBase 
           value={this.state.keyword}
           onChange={this.onChange} 

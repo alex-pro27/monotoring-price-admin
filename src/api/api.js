@@ -8,7 +8,10 @@ import {
   UPDATE_MONITORINGS,
   GET_FILTERED_LIST,
   GET_MONITORING_LIST,
-  GET_COMPLETE_WARES
+  GET_COMPLETE_WARES,
+  GET_TRASH_DATA,
+  RECOVERY_FROM_TRASH,
+  GET_REPORT,
 } from '../constants/urls';
 import RestService from './rest';
 
@@ -81,6 +84,32 @@ export default class Api {
   }
 
   /**
+   * Получить удаленные данные
+   */
+  async getTrashData() {
+    return this.request(
+      () => this._rest.get(
+        this._rest.getUrl(GET_TRASH_DATA),
+        {}, {},
+        {loadName: 'getTrashData', cacheTimelife: 0}
+      )
+    )
+  }
+
+  /**
+   * Восстановить удаленную сущность
+   */
+  async recoveryFromTrashCart(content_type_name, id) {
+    return this.request(
+      () => this._rest.post(
+        this._rest.getUrl(RECOVERY_FROM_TRASH),
+        {content_type_name, id}, {},
+        {loadName: 'recoveryFromTrash', cacheTimelife: 0}
+      )
+    )
+  }
+
+  /**
    * Получить список из табилцы по ID content_type
    * @param {*} content_type_id - content-type
    * @param {*} page - номер страницы
@@ -130,10 +159,10 @@ export default class Api {
     {datefrom, dateto, page, order_by, 
       regions, work_groups, monitoring_shops, 
       monitoring_types, keywords
-    }) {
+    }, report = false) {
     return this.request(
       () => this._rest.get(
-        this._rest.getUrl(GET_COMPLETE_WARES),
+        this._rest.getUrl(report ? GET_REPORT : GET_COMPLETE_WARES),
         { 
           datefrom,
           dateto,
@@ -157,11 +186,11 @@ export default class Api {
    */
   async sendFieldsContentType(content_type_id, fields, del = false) {
     const method = del ? 'delete': fields.id === 0 ? 'put' : 'post';
-    let action = method === 'put' ? 'create' : fields.id
+    const action = method === 'put' ? `${content_type_id}/create` : content_type_id + '/' + fields.id;
     return this.request(
       () => this._rest[method](
         this._rest.getUrl(ACTION_FIELDS_CONTENT_TYPE.replace(':action', action)),
-        {content_type_id, fields: JSON.stringify(fields)}, {},
+        {fields: JSON.stringify(fields)}, {},
         {loadName: 'sendFieldsContentType', cacheTimelife: 0}
       )
     )
@@ -218,6 +247,9 @@ export default class Api {
         case 500:
           message = "Ошибка сервера"
           break
+        case 502:
+            message = "Нет ответа от сервера"
+            break
       }
     }
     if (!message.match(/^{.*}$/)) {

@@ -10,6 +10,7 @@ class Admin {
   @persist @observable last_name
   @persist @observable token
   @persist @observable is_super_user
+  @persist @observable email
   @persist("list", Role) roles
   @persist("list", Monitoring) monitorings
 
@@ -17,7 +18,16 @@ class Admin {
     return `${this.first_name} ${this.last_name}`
   }
 
-  static create({id, first_name, last_name, token, monitorings = [], roles = [], is_super_user}) {
+  static create({
+    id, 
+    first_name, 
+    last_name, 
+    token,
+    email,
+    monitorings = [], 
+    roles = [], 
+    is_super_user
+  }) {
     let admin = new Admin();
     [
       admin.id,
@@ -27,6 +37,7 @@ class Admin {
       admin.roles,
       admin.is_super_user,
       admin.monitorings,
+      admin.email
     ] = [
       id,
       first_name,
@@ -35,6 +46,7 @@ class Admin {
       roles.map(x => Role.create(x)),
       is_super_user,
       monitorings.map(x => Monitoring.create(x)),
+      email
     ]
     return admin;
   }

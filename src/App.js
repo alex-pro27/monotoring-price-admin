@@ -115,6 +115,7 @@ class App extends Component {
   }
 
   renderDialog() {
+    console.log("dialog", this.state.dialog)
     return (
       <Dialog
         {...this.state.dialog}

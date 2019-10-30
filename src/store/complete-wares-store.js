@@ -130,6 +130,14 @@ class CompleteWaresStore {
     this.paginate = Paginate.create(paginate)
     console.log(this.paginate)
   }
+
+  getReport() {
+    const order_by = Object.entries(this.activeSort)
+    .filter(([name, sort]) => sort)
+    .map(([name, sort]) => sort === 'desc' ? `-${name}`: name)
+    .join(",")
+    return this.api.getCompleteWares({order_by, ...this.filter}, true)
+  }
   
   getCompleteWares(page = 1) {
     const order_by = Object.entries(this.activeSort)

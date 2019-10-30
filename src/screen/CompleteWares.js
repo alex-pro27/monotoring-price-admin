@@ -29,7 +29,7 @@ import AppWrapper from '../components/AppWrapper';
 import SearchInput from '../components/SearchInput';
 import moment from 'moment';
 import { SERVER_ROOT } from '../constants/config';
-import { Box } from '@material-ui/core';
+import { Box, Button } from '@material-ui/core';
 import roleTypes from '../constants/roles'
 
 const useFilterStyles = makeStyles(theme => ({
@@ -164,14 +164,17 @@ const styles = theme => ({
     alignItems: 'center',
     overflow: 'hidden'
   },
-
+  button: {
+    margin: '0 10px',
+  },
   list: {
     width: '100%',
     overflow: 'auto',
   },
   controlBlock: {
     display: 'flex',
-    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: '10px 15px',
     width: '100%'
   },
@@ -288,6 +291,15 @@ class CompleteWares extends Component {
     this.props.completeWaresStore.getCompleteWares()
   }
 
+  getReport = () => {
+    this.props.completeWaresStore.getReport().then(() => {
+      window.openMessage(
+        `Отчет отправлен на ${this.props.appStore.admin.email}`, 
+        "success",
+      )
+    })
+  }
+
   openFilter = () => {
     let filters = {
       monitoring_shops: "Магазины для мониторига(Конкуренты)",
@@ -356,13 +368,19 @@ class CompleteWares extends Component {
           )
         }
         <Box className={classes.controlBlock}>
-          <Box>
+          <Button
+            onClick={this.getReport}
+            variant="contained"
+            className={classes.button}
+          >
+            Отчет на почту
+          </Button>
+          <Box style={{display: 'flex'}}>
             <IconButton color={isCheckedFilter ? 'secondary': 'default'} onClick={this.openFilter}>
               <Icon>filter_list</Icon>
             </IconButton>
-          </Box>
-          <Box style={{margin: "auto 15px"}}>
             <SearchInput
+              style={{margin: "auto 15px"}}
               keyword={keyword}
               onSearch={this.onSearch}
               placeHolder={`Искать ${name}`} 

@@ -13,6 +13,7 @@ import { observe } from 'mobx';
 import Monitorings from './screen/Monitorings';
 import CompleteWares from './screen/CompleteWares';
 import CompleteWare from './screen/CompleteWare';
+import TrashCart from './screen/TrashCart';
 
 export const history = createHashHistory()
 
@@ -46,6 +47,12 @@ export const RegisterRoutes = [
       },
     ]
   },
+  {
+    path: "/trash",
+    component: TrashCart,
+    menu: true,
+    icon: "delete_sweep",
+  }
 ]
 
 @inject('appStore')
