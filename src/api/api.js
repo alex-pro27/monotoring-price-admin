@@ -12,6 +12,7 @@ import {
   GET_TRASH_DATA,
   RECOVERY_FROM_TRASH,
   GET_REPORT,
+  GET_ONLINE_USERS,
 } from '../constants/urls';
 import RestService from './rest';
 
@@ -210,6 +211,15 @@ export default class Api {
       () => this._rest.get(
         this._rest.getUrl(GET_MONITORING_LIST),
         {}, {}, {loadName: "getMonitrongsList", cacheTimelife: 0}
+      )
+    )
+  }
+
+  async getOnlineUsers() {
+    return this.request(
+      () => this._rest.get(
+        this._rest.getUrl(GET_ONLINE_USERS),
+        {}, {}, {loadName: "getOnlineUsers", cacheTimelife: 0}
       )
     )
   }

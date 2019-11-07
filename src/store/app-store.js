@@ -19,7 +19,24 @@ class AppStore {
   @persist('object', Admin) @observable admin;
   @observable avilableViews = new Map()
   @observable onUpdateProduct = 0;
+  @observable onlineUsers = []
   _routes = []
+
+  @action clearAdmin = () => {
+    this.admin = null;
+  }
+
+  @action setOnlineUsers = (users) => {
+    this.onlineUsers = users.map(u => Admin.create(u))
+  }
+
+  @action addOnlineUser(user) {
+    this.onlineUsers.push(user)
+  }
+
+  @action rmOnlineUser(user_id) {
+    this.users = this.users.filter(({ id }) => id !== user_id)
+  }
 
   @computed get routesInMenu() {
     return this.routes.filter(({ menu }) => menu)
@@ -171,13 +188,16 @@ class AppStore {
           runInAction(() => this.onUpdateProduct++);
         }
       })
-      this.socket.on("client_joined", ({client_name}) => {
-        console.log("client_joined", client_name)
-        window.openMessage(`Пользователь ${client_name} присоединился`, "success");
+      this.socket.on("client_joined", ({user}) => {
+        user = Admin.create(user)
+        console.log("client_joined", user.fullName)
+        this.addOnlineUser(Admin.create(user))
+        window.openMessage(`Пользователь ${user.fullName} присоединился`, "success");
       })
-      this.socket.on("client_leaved", ({client_name}) => {
-        console.log("client_leaved", client_name)
-        window.openMessage(`Пользователь ${client_name} покинул админ панель`, "success");
+      this.socket.on("client_leaved", ({user_id, full_name}) => {
+        console.log("client_leaved", full_name)
+        this.rmOnlineUser(user_id)
+        window.openMessage(`Пользователь ${full_name} покинул админ панель`, "success");
       })
       this.socket.on("onopen", () => {
         console.log("connected open")
@@ -190,6 +210,12 @@ class AppStore {
         token: this.admin.token
       })
     })
+  }
+
+  getOnlineUsers() {
+    if (this.onlineUsers.length === 0) {
+      this.api.getOnlineUsers().then(this.setOnlineUsers)
+    }
   }
 
   getRoute(pathMatch) {
@@ -272,10 +298,6 @@ class AppStore {
         monitoringStore.clear();
       })
     }
-  }
-
-  @action clearAdmin = () => {
-    this.admin = null;
   }
 
 }
