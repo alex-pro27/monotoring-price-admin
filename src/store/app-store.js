@@ -31,11 +31,11 @@ class AppStore {
   }
 
   @action addOnlineUser(user) {
-    this.onlineUsers.push(user)
+    this.onlineUsers = [user].concat(this.onlineUsers)
   }
 
   @action rmOnlineUser(user_id) {
-    this.users = this.users.filter(({ id }) => id !== user_id)
+    this.onlineUsers = this.onlineUsers.filter(({ id }) => id !== user_id)
   }
 
   @computed get routesInMenu() {
@@ -196,8 +196,8 @@ class AppStore {
       })
       this.socket.on("client_leaved", ({user_id, full_name}) => {
         console.log("client_leaved", full_name)
-        this.rmOnlineUser(user_id)
         window.openMessage(`Пользователь ${full_name} покинул админ панель`, "success");
+        this.rmOnlineUser(user_id)
       })
       this.socket.on("onopen", () => {
         console.log("connected open")
@@ -212,8 +212,8 @@ class AppStore {
     })
   }
 
-  getOnlineUsers() {
-    if (this.onlineUsers.length === 0) {
+  getOnlineUsers(update) {
+    if (update || this.onlineUsers.length === 0) {
       this.api.getOnlineUsers().then(this.setOnlineUsers)
     }
   }
@@ -291,13 +291,14 @@ class AppStore {
       this.socket.emit("logout", {
         token: this.admin.token
       })
-    } else {
-      this.api.logout().then(() => {
-        this.clearAdmin();
-        this.avilableViews = new Map();
-        monitoringStore.clear();
-      })
+      this.socket.close()
     }
+    this.api.logout().then(() => {
+      this.clearAdmin();
+      this.avilableViews = new Map();
+      monitoringStore.clear();
+    })
+    
   }
 
 }

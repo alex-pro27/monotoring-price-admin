@@ -14,10 +14,6 @@ class Admin {
   @persist("list", Role) roles
   @persist("list", Monitoring) monitorings
 
-  get fullName() {
-    return `${this.first_name} ${this.last_name}`
-  }
-
   static create({
     id, 
     first_name, 
@@ -48,6 +44,7 @@ class Admin {
       monitorings.map(x => Monitoring.create(x)),
       email
     ]
+    admin.fullName = `${first_name} ${last_name}`
     return admin;
   }
 }
