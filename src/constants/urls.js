@@ -70,6 +70,11 @@ export const GET_TRASH_DATA = 'admin/trash-data'
 export const RECOVERY_FROM_TRASH = 'admin/recovery-from-trash'
 
 /**
+ * Получтиь всех пользователей online
+ */
+export const GET_ONLINE_USERS = 'admin/online-users'
+
+/**
  * Websocket админа
  */
 export const WS_ADMIN = '/admin'

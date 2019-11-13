@@ -19,7 +19,24 @@ class AppStore {
   @persist('object', Admin) @observable admin;
   @observable avilableViews = new Map()
   @observable onUpdateProduct = 0;
+  @observable onlineUsers = []
   _routes = []
+
+  @action clearAdmin = () => {
+    this.admin = null;
+  }
+
+  @action setOnlineUsers = (users) => {
+    this.onlineUsers = users.map(u => Admin.create(u))
+  }
+
+  @action addOnlineUser(user) {
+    this.onlineUsers = [user].concat(this.onlineUsers)
+  }
+
+  @action rmOnlineUser(user_id) {
+    this.onlineUsers = this.onlineUsers.filter(({ id }) => id !== user_id)
+  }
 
   @computed get routesInMenu() {
     return this.routes.filter(({ menu }) => menu)
@@ -171,13 +188,16 @@ class AppStore {
           runInAction(() => this.onUpdateProduct++);
         }
       })
-      this.socket.on("client_joined", ({client_name}) => {
-        console.log("client_joined", client_name)
-        window.openMessage(`Пользователь ${client_name} присоединился`, "success");
+      this.socket.on("client_joined", ({user}) => {
+        user = Admin.create(user)
+        console.log("client_joined", user.fullName)
+        this.addOnlineUser(Admin.create(user))
+        window.openMessage(`Пользователь ${user.fullName} присоединился`, "success");
       })
-      this.socket.on("client_leaved", ({client_name}) => {
-        console.log("client_leaved", client_name)
-        window.openMessage(`Пользователь ${client_name} покинул админ панель`, "success");
+      this.socket.on("client_leaved", ({user_id, full_name}) => {
+        console.log("client_leaved", full_name)
+        window.openMessage(`Пользователь ${full_name} покинул админ панель`, "success");
+        this.rmOnlineUser(user_id)
       })
       this.socket.on("onopen", () => {
         console.log("connected open")
@@ -190,6 +210,12 @@ class AppStore {
         token: this.admin.token
       })
     })
+  }
+
+  getOnlineUsers(update) {
+    if (update || this.onlineUsers.length === 0) {
+      this.api.getOnlineUsers().then(this.setOnlineUsers)
+    }
   }
 
   getRoute(pathMatch) {
@@ -265,17 +291,14 @@ class AppStore {
       this.socket.emit("logout", {
         token: this.admin.token
       })
-    } else {
-      this.api.logout().then(() => {
-        this.clearAdmin();
-        this.avilableViews = new Map();
-        monitoringStore.clear();
-      })
+      this.socket.close()
     }
-  }
-
-  @action clearAdmin = () => {
-    this.admin = null;
+    this.api.logout().then(() => {
+      this.clearAdmin();
+      this.avilableViews = new Map();
+      monitoringStore.clear();
+    })
+    
   }
 
 }

@@ -4,7 +4,7 @@ import { createHashHistory } from 'history'
 import { PublicRoute } from 'react-router-with-props';
 
 import Login from './screen/Login';
-import Index from './screen/Index';
+import Dashboard from './screen/Dashboard';
 import Route404 from './screen/Route404';
 import EditContentType from './screen/EditContentType';
 // import ContentTypes from './screen/ContentTypes';
@@ -20,7 +20,7 @@ export const history = createHashHistory()
 export const RegisterRoutes = [
   {
     path: "/",
-    component: Index,
+    component: Dashboard,
     title: "Главная",
     icon: "home",
     menu: true
